@@ -6,12 +6,20 @@
 # datos (PostgreSQL).
 
 $ErrorActionPreference = "Stop"
+# En PowerShell 7.3+, por defecto cualquier texto que un programa externo escriba en
+# stderr (docker, por ejemplo, imprime ahi el progreso de la descarga de imagenes)
+# se trata como error terminante si $ErrorActionPreference es "Stop". Se desactiva
+# ese comportamiento para que "docker compose" no aborte el script solo por avisos.
+if (Test-Path variable:global:PSNativeCommandUseErrorActionPreference) {
+    $global:PSNativeCommandUseErrorActionPreference = $false
+}
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $root
 
 $jarPath = Join-Path $root "app.jar"
 $jreDir = Join-Path $root "jre"
-$logFile = Join-Path $root "backend.log"
+$stdoutLog = Join-Path $root "backend.out.log"
+$stderrLog = Join-Path $root "backend.err.log"
 
 function Write-Step($msg) {
     Write-Host ""
@@ -71,7 +79,28 @@ function Wait-ForHttp($url, $timeoutSeconds) {
         } catch {}
         Start-Sleep -Seconds 2
         $elapsed += 2
+        Write-Host "." -NoNewline
     }
+    Write-Host ""
+    return $false
+}
+
+function Wait-ForPostgres($timeoutSeconds) {
+    # Se prueba conexion TCP directa al puerto en vez de parsear "docker compose ps",
+    # para no depender del formato JSON exacto de la version de Docker instalada.
+    $elapsed = 0
+    while ($elapsed -lt $timeoutSeconds) {
+        try {
+            $client = New-Object System.Net.Sockets.TcpClient
+            $client.Connect("localhost", 5432)
+            $client.Close()
+            return $true
+        } catch {}
+        Start-Sleep -Seconds 2
+        $elapsed += 2
+        Write-Host "." -NoNewline
+    }
+    Write-Host ""
     return $false
 }
 
@@ -98,12 +127,20 @@ if (-not (Test-DockerAvailable)) {
 Write-Step "Levantando la base de datos (PostgreSQL) con Docker..."
 docker compose -f (Join-Path $root "docker-compose.yml") up -d postgres
 
+Write-Step "Esperando a que Postgres este listo (puede tardar mas la primera vez, mientras Docker baja la imagen)..."
+$dbOk = Wait-ForPostgres 180
+if (-not $dbOk) {
+    Write-Host "Postgres no quedo listo a tiempo. Revisa Docker Desktop (contenedores) e intenta de nuevo." -ForegroundColor Red
+    Read-Host "Presiona Enter para salir"
+    exit 1
+}
+
 $javaExe = Get-JavaExePath
 
 Write-Step "Iniciando Sistema Contable..."
 $env:SPRING_PROFILES_ACTIVE = "dev"
 $process = Start-Process -FilePath $javaExe -ArgumentList "-jar", "`"$jarPath`"" -WorkingDirectory $root `
-    -RedirectStandardOutput $logFile -RedirectStandardError $logFile -PassThru -WindowStyle Hidden
+    -RedirectStandardOutput $stdoutLog -RedirectStandardError $stderrLog -PassThru -WindowStyle Hidden
 
 Write-Step "Esperando a que arranque (puede tardar unos segundos la primera vez)..."
 $ok = Wait-ForHttp "http://localhost:8080/actuator/health" 90
@@ -116,6 +153,13 @@ if ($ok) {
     Write-Host "Para apagarlo, cierra esta ventana o presiona Ctrl+C."
     Wait-Process -Id $process.Id
 } else {
-    Write-Host "El sistema no respondio a tiempo. Revisa el log: $logFile" -ForegroundColor Red
+    Write-Host "El sistema no respondio a tiempo. Esto es lo ultimo que escribio ($stderrLog):" -ForegroundColor Red
+    if (Test-Path $stderrLog) { Get-Content $stderrLog -Tail 40 }
+    Write-Host ""
+    Write-Host "Y esto es lo ultimo de la salida normal ($stdoutLog):" -ForegroundColor Red
+    if (Test-Path $stdoutLog) { Get-Content $stdoutLog -Tail 20 }
+    if ($process -and -not $process.HasExited) {
+        Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+    }
     Read-Host "Presiona Enter para salir"
 }
