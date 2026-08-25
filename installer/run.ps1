@@ -2,14 +2,19 @@
 # Se ejecuta con doble clic en SistemaContable.bat (que llama a este script).
 # No requiere tener Java instalado de antemano: si no encuentra una version 21+
 # adecuada, descarga un runtime portatil de Eclipse Temurin solo para esta app,
-# sin tocar nada mas de tu sistema. Si requiere Docker Desktop para la base de
-# datos (PostgreSQL).
+# sin tocar nada mas de tu sistema.
+#
+# Para la base de datos (PostgreSQL) admite dos caminos, en este orden:
+#   1. Docker Desktop, si esta disponible.
+#   2. PostgreSQL instalado nativamente en Windows (sin virtualizacion / sin BIOS),
+#      descargable desde https://www.postgresql.org/download/windows/
+# Si ya hay algo escuchando en el puerto 5432, se usa tal cual sin tocar nada.
 
 $ErrorActionPreference = "Stop"
 # En PowerShell 7.3+, por defecto cualquier texto que un programa externo escriba en
-# stderr (docker, por ejemplo, imprime ahi el progreso de la descarga de imagenes)
-# se trata como error terminante si $ErrorActionPreference es "Stop". Se desactiva
-# ese comportamiento para que "docker compose" no aborte el script solo por avisos.
+# stderr (docker o psql, por ejemplo, imprimen ahi avisos normales) se trata como
+# error terminante si $ErrorActionPreference es "Stop". Se desactiva ese
+# comportamiento para que esos programas no aborten el script solo por avisos.
 if (Test-Path variable:global:PSNativeCommandUseErrorActionPreference) {
     $global:PSNativeCommandUseErrorActionPreference = $false
 }
@@ -70,6 +75,17 @@ function Test-DockerAvailable {
     return [bool](Get-Command docker -ErrorAction SilentlyContinue)
 }
 
+function Test-PortOpen($portNumber) {
+    try {
+        $client = New-Object System.Net.Sockets.TcpClient
+        $client.Connect("localhost", $portNumber)
+        $client.Close()
+        return $true
+    } catch {
+        return $false
+    }
+}
+
 function Wait-ForHttp($url, $timeoutSeconds) {
     $elapsed = 0
     while ($elapsed -lt $timeoutSeconds) {
@@ -85,22 +101,93 @@ function Wait-ForHttp($url, $timeoutSeconds) {
     return $false
 }
 
-function Wait-ForPostgres($timeoutSeconds) {
-    # Se prueba conexion TCP directa al puerto en vez de parsear "docker compose ps",
-    # para no depender del formato JSON exacto de la version de Docker instalada.
+function Wait-ForPort($portNumber, $timeoutSeconds) {
     $elapsed = 0
     while ($elapsed -lt $timeoutSeconds) {
-        try {
-            $client = New-Object System.Net.Sockets.TcpClient
-            $client.Connect("localhost", 5432)
-            $client.Close()
-            return $true
-        } catch {}
+        if (Test-PortOpen $portNumber) { return $true }
         Start-Sleep -Seconds 2
         $elapsed += 2
         Write-Host "." -NoNewline
     }
     Write-Host ""
+    return $false
+}
+
+function Get-PsqlPath {
+    $cmd = Get-Command psql -ErrorAction SilentlyContinue
+    if ($cmd) { return $cmd.Source }
+    $found = Get-ChildItem "C:\Program Files\PostgreSQL\*\bin\psql.exe" -ErrorAction SilentlyContinue |
+        Sort-Object FullName -Descending | Select-Object -First 1
+    if ($found) { return $found.FullName }
+    return $null
+}
+
+function Test-AppDatabaseReady {
+    param($psqlPath)
+    $env:PGPASSWORD = "contafin_dev"
+    & $psqlPath -h localhost -U contafin -d contafin -c "SELECT 1" *> $null
+    $ok = ($LASTEXITCODE -eq 0)
+    Remove-Item Env:\PGPASSWORD -ErrorAction SilentlyContinue
+    return $ok
+}
+
+function Initialize-AppDatabase {
+    param($psqlPath)
+
+    if (Test-AppDatabaseReady $psqlPath) { return $true }
+
+    Write-Step "Configurando la base de datos de Sistema Contable (solo la primera vez)..."
+    Write-Host "Necesito la contrasena que le pusiste al usuario 'postgres' al instalar PostgreSQL."
+    $securePassword = Read-Host "Contrasena de 'postgres'" -AsSecureString
+    $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePassword)
+    $plainPassword = [Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr)
+    [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+
+    $env:PGPASSWORD = $plainPassword
+    & $psqlPath -h localhost -U postgres -c "CREATE ROLE contafin WITH LOGIN PASSWORD 'contafin_dev' CREATEDB;" *> $null
+    & $psqlPath -h localhost -U postgres -c "CREATE DATABASE contafin OWNER contafin;" *> $null
+    Remove-Item Env:\PGPASSWORD -ErrorAction SilentlyContinue
+
+    if (Test-AppDatabaseReady $psqlPath) {
+        Write-Host "Base de datos lista." -ForegroundColor Green
+        return $true
+    }
+
+    Write-Host "No se pudo preparar la base de datos. Verifica que la contrasena de 'postgres' sea correcta." -ForegroundColor Red
+    return $false
+}
+
+function Ensure-Database {
+    if (Test-PortOpen 5432) {
+        Write-Step "Ya hay algo escuchando en el puerto 5432, se usa tal cual."
+        return $true
+    }
+
+    if (Test-DockerAvailable) {
+        Write-Step "Levantando la base de datos (PostgreSQL) con Docker..."
+        docker compose -f (Join-Path $root "docker-compose.yml") up -d postgres
+        Write-Step "Esperando a que Postgres este listo (puede tardar mas la primera vez, mientras Docker baja la imagen)..."
+        return Wait-ForPort 5432 180
+    }
+
+    $psqlPath = Get-PsqlPath
+    if ($psqlPath) {
+        Write-Step "Se detecto PostgreSQL instalado en este equipo. Intentando iniciar el servicio..."
+        Get-Service -Name "postgresql*" -ErrorAction SilentlyContinue | Start-Service -ErrorAction SilentlyContinue
+        if (-not (Wait-ForPort 5432 30)) {
+            Write-Host "PostgreSQL esta instalado pero no arranco. Abre 'Servicios' de Windows y arranca manualmente el servicio postgresql-x64-*." -ForegroundColor Red
+            return $false
+        }
+        return Initialize-AppDatabase $psqlPath
+    }
+
+    Write-Host "No se encontro Docker Desktop ni PostgreSQL instalado en este equipo." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "Instala PostgreSQL para Windows (no necesita virtualizacion ni tocar el BIOS):" -ForegroundColor Yellow
+    Write-Host "  https://www.postgresql.org/download/windows/" -ForegroundColor Yellow
+    Write-Host "Durante la instalacion, anota bien la contrasena que le pongas al usuario 'postgres'" -ForegroundColor Yellow
+    Write-Host "(el instalador la pide una sola vez). Deja el puerto en el valor por defecto (5432)." -ForegroundColor Yellow
+    Write-Host "Cuando termine la instalacion, vuelve a abrir Sistema Contable." -ForegroundColor Yellow
     return $false
 }
 
@@ -116,21 +203,8 @@ if (-not (Test-Path $jarPath)) {
     }
 }
 
-Write-Step "Verificando Docker Desktop (base de datos)..."
-if (-not (Test-DockerAvailable)) {
-    Write-Host "Docker no esta instalado o no esta en el PATH." -ForegroundColor Yellow
-    Write-Host "Instala Docker Desktop desde https://www.docker.com/products/docker-desktop/ y vuelve a abrir Sistema Contable." -ForegroundColor Yellow
-    Read-Host "Presiona Enter para salir"
-    exit 1
-}
-
-Write-Step "Levantando la base de datos (PostgreSQL) con Docker..."
-docker compose -f (Join-Path $root "docker-compose.yml") up -d postgres
-
-Write-Step "Esperando a que Postgres este listo (puede tardar mas la primera vez, mientras Docker baja la imagen)..."
-$dbOk = Wait-ForPostgres 180
-if (-not $dbOk) {
-    Write-Host "Postgres no quedo listo a tiempo. Revisa Docker Desktop (contenedores) e intenta de nuevo." -ForegroundColor Red
+Write-Step "Preparando la base de datos..."
+if (-not (Ensure-Database)) {
     Read-Host "Presiona Enter para salir"
     exit 1
 }

@@ -38,13 +38,18 @@ Monorepo con tres subproyectos independientes:
 ### Windows: instalador de un solo clic (recomendado para usar la app, no para desarrollar)
 
 La carpeta `/installer` empaqueta el backend con la web ya compilada adentro, así que
-solo hace falta **Docker Desktop** (para la base de datos) — no necesitas instalar
-Node.js, y si no tienes Java 21 el propio instalador lo descarga automáticamente la
-primera vez, sin afectar el resto de tu sistema. Ver `installer/README.md` para cómo
-generar el paquete (`app.jar`) y distribuirlo. Una vez armado el paquete:
+no necesitas instalar Node.js, y si no tienes Java 21 el propio instalador lo descarga
+automáticamente la primera vez, sin afectar el resto de tu sistema. Para la base de
+datos usa, en este orden, lo primero que encuentre: algo que ya esté corriendo en el
+puerto 5432, Docker Desktop, o **PostgreSQL instalado nativamente en Windows** (esta
+última opción no requiere virtualización ni tocar el BIOS — instalador oficial en
+https://www.postgresql.org/download/windows/). Ver `installer/README.md` para más
+detalle y cómo generar el paquete (`app.jar`) y distribuirlo. Una vez armado el
+paquete:
 
 1. Descomprime la carpeta donde quieras.
-2. Con Docker Desktop corriendo, doble clic en `SistemaContable.bat`.
+2. Doble clic en `SistemaContable.bat` (con Docker Desktop corriendo, o con PostgreSQL
+   nativo instalado — lo que tengas disponible).
 3. (Opcional) Clic derecho → **Enviar a → Escritorio (crear acceso directo)** para tenerlo a mano.
 
 Esto levanta Postgres, arranca el backend (que también sirve la web) y abre

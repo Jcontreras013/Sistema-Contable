@@ -1,18 +1,33 @@
 # Instalador para Windows
 
 Esta carpeta arma un paquete que corre Sistema Contable con doble clic, sin instalar
-Node.js ni Java de antemano (solo necesitas **Docker Desktop**, para la base de datos).
+Node.js ni Java de antemano.
 
 ## Cómo funciona
 
 - `app.jar` es el backend ya compilado, con la web (React) empaquetada adentro — es el
   único proceso que hay que correr; sirve la API y la interfaz desde el mismo puerto
   (8080).
-- `run.ps1` levanta Postgres con Docker, verifica si hay Java 21+ disponible y, si no,
+- `run.ps1` prepara la base de datos, verifica si hay Java 21+ disponible y, si no,
   descarga automáticamente un runtime portátil de Eclipse Temurin solo para esta app
   (no toca el resto de tu sistema), arranca el backend y abre el navegador.
 - `SistemaContable.bat` es el punto de entrada de doble clic (llama a `run.ps1`).
-- `docker-compose.yml` define solo el contenedor de Postgres que usa `run.ps1`.
+- `docker-compose.yml` define solo el contenedor de Postgres, usado si hay Docker.
+
+### Base de datos: tres caminos posibles (en este orden)
+
+1. **Ya hay algo en el puerto 5432** — se usa tal cual, sin tocar nada.
+2. **Docker Desktop está instalado** — `run.ps1` levanta Postgres con
+   `docker-compose.yml`. Requiere virtualización habilitada en el BIOS.
+3. **PostgreSQL instalado nativamente en Windows** (sin Docker, sin virtualización,
+   sin tocar el BIOS) — si detecta `psql` (por PATH o en
+   `C:\Program Files\PostgreSQL\*\bin`), intenta iniciar el servicio de Windows y, la
+   primera vez, pide la contraseña del usuario `postgres` (la que se puso al instalar)
+   para crear el rol y la base de datos que usa la app. Instalador oficial:
+   https://www.postgresql.org/download/windows/
+
+Si no encuentra ninguna de las tres, el script explica cómo instalar PostgreSQL nativo
+y se detiene ahí.
 
 `app.jar` sí se versiona en este repo (es la única forma de distribuirlo sin un
 servicio externo de hosting): `run.ps1` lo descarga solo desde
