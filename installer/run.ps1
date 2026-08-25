@@ -76,9 +76,15 @@ function Wait-ForHttp($url, $timeoutSeconds) {
 }
 
 if (-not (Test-Path $jarPath)) {
-    Write-Host "No se encontro app.jar junto a este script. Reinstala Sistema Contable." -ForegroundColor Red
-    Read-Host "Presiona Enter para salir"
-    exit 1
+    Write-Step "Descargando Sistema Contable (primera vez, puede tardar unos minutos)..."
+    $jarUrl = "https://raw.githubusercontent.com/Jcontreras013/Sistema-Contable/main/installer/app.jar"
+    try {
+        Invoke-WebRequest -Uri $jarUrl -OutFile $jarPath -UseBasicParsing
+    } catch {
+        Write-Host "No se pudo descargar app.jar: $_" -ForegroundColor Red
+        Read-Host "Presiona Enter para salir"
+        exit 1
+    }
 }
 
 Write-Step "Verificando Docker Desktop (base de datos)..."

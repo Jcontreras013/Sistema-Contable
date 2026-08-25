@@ -14,10 +14,13 @@ Node.js ni Java de antemano (solo necesitas **Docker Desktop**, para la base de 
 - `SistemaContable.bat` es el punto de entrada de doble clic (llama a `run.ps1`).
 - `docker-compose.yml` define solo el contenedor de Postgres que usa `run.ps1`.
 
-`app.jar` **no se versiona en git** (es un binario generado); hay que construirlo antes
-de armar el paquete de distribución.
+`app.jar` sí se versiona en este repo (es la única forma de distribuirlo sin un
+servicio externo de hosting): `run.ps1` lo descarga solo desde
+`raw.githubusercontent.com` la primera vez si no lo encuentra junto al script, así que
+el paquete que le compartes a alguien puede ser solo `run.ps1` + `SistemaContable.bat`
++ `docker-compose.yml` (unos pocos KB).
 
-## Cómo generar `app.jar`
+## Cómo actualizar `app.jar` después de un cambio
 
 Desde la raíz del repo, con Node.js y JDK 21 instalados (esto es para *construir* el
 paquete, no para *correrlo* después):
@@ -26,16 +29,21 @@ paquete, no para *correrlo* después):
 cd backend
 ./gradlew bootJar   # compila la web y la empaqueta dentro del jar automáticamente
 cp build/libs/backend-*.jar ../installer/app.jar
+git add ../installer/app.jar && git commit -m "Actualiza app.jar" && git push
 ```
+
+> El repo ya advierte que este archivo pesa más de lo recomendado para Git normal. Si
+> se actualiza seguido, conviene migrar esto a Git LFS o a un GitHub Release en vez de
+> seguir commiteando el binario directo.
 
 ## Cómo distribuir
 
-Comprime esta carpeta (`installer/`, ya con `app.jar` adentro) en un `.zip` y compártelo.
-Quien lo reciba solo tiene que:
+Comparte `run.ps1`, `SistemaContable.bat` y `docker-compose.yml` (por ejemplo, en un
+`.zip` chiquito). Quien lo reciba solo tiene que:
 
-1. Descomprimir el `.zip` en cualquier carpeta.
+1. Descomprimir en cualquier carpeta.
 2. Tener Docker Desktop instalado y corriendo.
 3. Doble clic en `SistemaContable.bat` (o crear un acceso directo a él en el Escritorio).
 
-La primera vez puede tardar un poco más si tiene que descargar el runtime de Java o
-bajar la imagen de Postgres.
+La primera vez tarda más porque descarga `app.jar` (~63 MB) y, si hace falta, el
+runtime de Java y la imagen de Postgres. Las siguientes veces arranca directo.

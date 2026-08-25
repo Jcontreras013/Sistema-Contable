@@ -32,7 +32,9 @@ web/coverage/
 docker-data/
 
 # --- Installer (Windows packaging) ---
-installer/app.jar
+# installer/app.jar SÍ se versiona a propósito (ver installer/README.md) para que
+# run.ps1 pueda descargarlo automáticamente desde raw.githubusercontent.com.
 installer/jre/
 installer/jre-temp.zip
 installer/jre-extract/
+installer/backend.log
