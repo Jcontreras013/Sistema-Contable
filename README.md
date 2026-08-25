@@ -35,16 +35,27 @@ Monorepo con tres subproyectos independientes:
 
 ## Arranque rápido
 
-### Windows: acceso directo de escritorio
+### Windows: instalador de un solo clic (recomendado para usar la app, no para desarrollar)
 
-`start-windows.bat` (en la raíz del repo) levanta Postgres, el backend y la web, y abre el navegador automáticamente. Para tener un acceso directo en el Escritorio:
+La carpeta `/installer` empaqueta el backend con la web ya compilada adentro, así que
+solo hace falta **Docker Desktop** (para la base de datos) — no necesitas instalar
+Node.js, y si no tienes Java 21 el propio instalador lo descarga automáticamente la
+primera vez, sin afectar el resto de tu sistema. Ver `installer/README.md` para cómo
+generar el paquete (`app.jar`) y distribuirlo. Una vez armado el paquete:
 
-1. Clona el repo y ábrelo en el Explorador de archivos.
-2. Clic derecho sobre `start-windows.bat` → **Enviar a → Escritorio (crear acceso directo)**.
-3. (Opcional) Clic derecho sobre el acceso directo del Escritorio → **Propiedades → Cambiar icono...** para personalizarlo.
-4. Doble clic en el acceso directo para levantar todo y abrir `http://localhost:5173`.
+1. Descomprime la carpeta donde quieras.
+2. Con Docker Desktop corriendo, doble clic en `SistemaContable.bat`.
+3. (Opcional) Clic derecho → **Enviar a → Escritorio (crear acceso directo)** para tenerlo a mano.
 
-Requiere Docker Desktop corriendo y JDK 21 / Node.js 20+ instalados. Para detener el sistema, cierra las dos ventanas de consola (Backend y Web) que abre el script.
+Esto levanta Postgres, arranca el backend (que también sirve la web) y abre
+`http://localhost:8080` en tu navegador. Para apagarlo, cierra la ventana de PowerShell.
+
+### Windows: modo desarrollo (con Node.js, para tocar el código)
+
+`start-windows.bat` (en la raíz del repo) levanta Postgres, el backend y el servidor de
+desarrollo de la web por separado (con recarga en caliente). Requiere Docker Desktop,
+JDK 21 y Node.js 20+ instalados. Para detener el sistema, cierra las dos ventanas de
+consola (Backend y Web) que abre el script.
 
 ### 1. Base de datos + backend con Docker Compose
 

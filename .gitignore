@@ -30,3 +30,9 @@ web/coverage/
 
 # --- Docker ---
 docker-data/
+
+# --- Installer (Windows packaging) ---
+installer/app.jar
+installer/jre/
+installer/jre-temp.zip
+installer/jre-extract/

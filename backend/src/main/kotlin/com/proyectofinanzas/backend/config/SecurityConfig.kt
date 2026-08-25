@@ -72,7 +72,11 @@ class SecurityConfig(
                     .requestMatchers("/api/v1/users/**").hasRole("ADMIN")
                     .requestMatchers("/api/v1/audit-log/**").hasAnyRole("ADMIN", "AUDITOR")
                     .requestMatchers("/api/v1/exchange-rates/**").hasAnyRole("ADMIN", "ACCOUNTANT")
-                    .anyRequest().authenticated()
+                    .requestMatchers("/api/**").authenticated()
+                    // Todo lo que no es /api/** es el shell estático de la SPA (index.html, JS, CSS):
+                    // público por definición, igual que en cualquier app web — la protección real
+                    // vive en cada endpoint de /api/**, no en si el navegador puede descargar el bundle.
+                    .anyRequest().permitAll()
             }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
 

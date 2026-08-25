@@ -61,3 +61,37 @@ kotlin {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+val webDir = layout.projectDirectory.dir("../web")
+
+// Compila la web (React) y la empaqueta dentro del jar del backend, para que un solo
+// proceso Java sirva la API y la interfaz — sin necesitar Node en la máquina que corre
+// la app (solo en la máquina donde se construye).
+val npmCommand = if (org.gradle.internal.os.OperatingSystem.current().isWindows) "npm.cmd" else "npm"
+
+val npmInstall by tasks.registering(Exec::class) {
+    workingDir = webDir.asFile
+    commandLine(npmCommand, "install")
+    inputs.file(webDir.file("package.json"))
+    inputs.file(webDir.file("package-lock.json"))
+    outputs.dir(webDir.dir("node_modules"))
+}
+
+val buildWeb by tasks.registering(Exec::class) {
+    dependsOn(npmInstall)
+    workingDir = webDir.asFile
+    commandLine(npmCommand, "run", "build")
+    inputs.dir(webDir.dir("src"))
+    inputs.file(webDir.file("package.json"))
+    outputs.dir(webDir.dir("dist"))
+}
+
+val copyWebBuild by tasks.registering(Copy::class) {
+    dependsOn(buildWeb)
+    from(webDir.dir("dist"))
+    into(layout.buildDirectory.dir("resources/main/static"))
+}
+
+tasks.named("processResources") {
+    dependsOn(copyWebBuild)
+}
