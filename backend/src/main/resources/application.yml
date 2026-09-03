@@ -1,6 +1,10 @@
 spring:
   application:
     name: backend
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:contafin}
+    username: ${DB_USER:contafin}
+    password: ${DB_PASSWORD:contafin_dev}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -18,7 +22,7 @@ spring:
       write-dates-as-timestamps: false
 
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 app:
   jwt:

@@ -1,0 +1,39 @@
+databases:
+  - name: contafin-db
+    databaseName: contafin
+    user: contafin
+    plan: free
+
+services:
+  - type: web
+    name: sistema-contable
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: APP_SEED_ENABLED
+        value: "true"
+      - key: DB_HOST
+        fromDatabase:
+          name: contafin-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: contafin-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: contafin-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: contafin-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: contafin-db
+          property: password

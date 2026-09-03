@@ -35,6 +35,11 @@ Monorepo con tres subproyectos independientes:
 
 ## Arranque rápido
 
+### En la nube, gratis (para empezar a usarlo ya, sin instalar nada)
+
+Ver [`DEPLOY.md`](./DEPLOY.md) — despliega el sistema en Render con el archivo
+`render.yaml` de este repo (backend + PostgreSQL, plan gratis, para pruebas).
+
 ### Windows: instalador de un solo clic (recomendado para usar la app, no para desarrollar)
 
 La carpeta `/installer` empaqueta el backend con la web ya compilada adentro, así que
