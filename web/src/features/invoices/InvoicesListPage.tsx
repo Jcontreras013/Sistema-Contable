@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import { invoicesApi } from "@/api/invoices";
 import { useAuth } from "@/auth/AuthContext";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -14,6 +14,7 @@ export function InvoicesListPage() {
   const { hasRole } = useAuth();
   const [page, setPage] = useState(0);
   const { data, isLoading } = useQuery({ queryKey: ["invoices", page], queryFn: () => invoicesApi.list(page) });
+  const exportMutation = useMutation({ mutationFn: invoicesApi.downloadExcel });
 
   return (
     <div>
@@ -21,9 +22,14 @@ export function InvoicesListPage() {
         title="Facturas"
         description="Facturación de ventas con cuentas por cobrar."
         actions={
-          hasRole("ADMIN", "ACCOUNTANT") ? (
-            <Link to="/invoices/new" className={buttonVariants({})}><Plus className="h-4 w-4" /> Nueva factura</Link>
-          ) : undefined
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => exportMutation.mutate()} disabled={exportMutation.isPending}>
+              <Download className="h-4 w-4" /> Exportar Excel
+            </Button>
+            {hasRole("ADMIN", "ACCOUNTANT") && (
+              <Link to="/invoices/new" className={buttonVariants({})}><Plus className="h-4 w-4" /> Nueva factura</Link>
+            )}
+          </div>
         }
       />
 

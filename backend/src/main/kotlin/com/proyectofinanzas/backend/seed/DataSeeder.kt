@@ -10,6 +10,10 @@ import com.proyectofinanzas.backend.domain.exchangerate.ExchangeRateService
 import com.proyectofinanzas.backend.domain.expense.CreateExpenseRequest
 import com.proyectofinanzas.backend.domain.expense.ExpensePaymentMethod
 import com.proyectofinanzas.backend.domain.expense.ExpenseService
+import com.proyectofinanzas.backend.domain.fiscal.CaiAuthorizationService
+import com.proyectofinanzas.backend.domain.fiscal.CompanyProfileRequest
+import com.proyectofinanzas.backend.domain.fiscal.CompanyProfileService
+import com.proyectofinanzas.backend.domain.fiscal.CreateCaiAuthorizationRequest
 import com.proyectofinanzas.backend.domain.invoice.CreateInvoiceRequest
 import com.proyectofinanzas.backend.domain.invoice.InvoiceLineRequest
 import com.proyectofinanzas.backend.domain.invoice.InvoiceService
@@ -52,6 +56,8 @@ class DataSeeder(
     private val invoiceService: InvoiceService,
     private val expenseService: ExpenseService,
     private val paymentService: PaymentService,
+    private val companyProfileService: CompanyProfileService,
+    private val caiAuthorizationService: CaiAuthorizationService,
     @Value("\${app.seed.enabled:true}") private val enabled: Boolean,
 ) : ApplicationRunner {
 
@@ -79,9 +85,33 @@ class DataSeeder(
             Party(type = PartyType.VENDOR, name = "Suplidora Central de Oficina", rtn = "08011234567890", email = "facturacion@suplidoracentral.hn")
         )
 
+        companyProfileService.upsert(
+            CompanyProfileRequest(
+                legalName = "Comercial Ejemplo, S. de R.L. (datos demo, reemplázalos por los reales)",
+                rtn = "08019999000001",
+                address = "Boulevard Morazán, Tegucigalpa, Honduras",
+                phone = "+504 2222-3333",
+                email = "facturacion@ejemplo-demo.hn",
+            )
+        )
+
         runAs(admin) {
             exchangeRateService.upsert(ExchangeRateRequest(rateDate = LocalDate.now().minusDays(30), rate = BigDecimal("24.70")))
             exchangeRateService.upsert(ExchangeRateRequest(rateDate = LocalDate.now(), rate = BigDecimal("24.85")))
+
+            // CAI de ejemplo para poder emitir facturas demo. No es válido ante el SAR: hay que
+            // solicitar el CAI real como autoimpresor y registrarlo en Configuración fiscal.
+            caiAuthorizationService.create(
+                CreateCaiAuthorizationRequest(
+                    caiCode = "DEMO0-DEMO00-DEMO00-DEMO00-DEMO0D",
+                    establishmentCode = "001",
+                    emissionPointCode = "001",
+                    documentTypeCode = "01",
+                    rangeStart = 1,
+                    rangeEnd = 5000,
+                    emissionLimitDate = LocalDate.now().plusYears(1),
+                )
+            )
 
             val salesAccount = accounts.getValue("4101")
             val invoice1 = invoiceService.create(
@@ -164,7 +194,11 @@ class DataSeeder(
             )
         }
 
-        log.info("Datos demo listos. Usuarios: admin@demo.com / contador@demo.com / auditor@demo.com (clave: Demo1234!)")
+        log.info(
+            "Datos demo listos. Usuarios: admin@demo.com / contador@demo.com / auditor@demo.com " +
+                "(clave: Demo1234!). El CAI sembrado es de ejemplo: regístralo con tu CAI real del " +
+                "SAR en Configuración fiscal antes de facturar de verdad."
+        )
     }
 
     private fun createUser(email: String, password: String, fullName: String, role: Role): User =

@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
+import { Download, Mail } from "lucide-react";
 import { invoicesApi } from "@/api/invoices";
 import { ApiRequestError } from "@/api/client";
 import { useAuth } from "@/auth/AuthContext";
@@ -18,6 +19,7 @@ export function InvoiceDetailPage() {
   const queryClient = useQueryClient();
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
 
   const { data: invoice, isLoading } = useQuery({
     queryKey: ["invoices", id],
@@ -34,6 +36,20 @@ export function InvoiceDetailPage() {
     onError: (err) => setError(err instanceof ApiRequestError ? err.message : "No se pudo cancelar la factura"),
   });
 
+  const downloadPdfMutation = useMutation({
+    mutationFn: () => invoicesApi.downloadPdf(id!),
+    onError: (err) => setError(err instanceof ApiRequestError ? err.message : "No se pudo descargar el PDF"),
+  });
+
+  const sendEmailMutation = useMutation({
+    mutationFn: () => invoicesApi.sendEmail(id!),
+    onSuccess: () => {
+      setError(null);
+      setEmailSent(true);
+    },
+    onError: (err) => setError(err instanceof ApiRequestError ? err.message : "No se pudo enviar el correo"),
+  });
+
   if (isLoading || !invoice) return <p className="text-sm text-muted-foreground">Cargando...</p>;
 
   const canManage = hasRole("ADMIN", "ACCOUNTANT");
@@ -44,7 +60,11 @@ export function InvoiceDetailPage() {
     <div>
       <PageHeader
         title={`Factura #${invoice.invoiceNumber}`}
-        description={`${invoice.partyName} · Emitida ${formatDate(invoice.issueDate)} · Vence ${formatDate(invoice.dueDate)}`}
+        description={
+          invoice.correlativo
+            ? `${invoice.partyName} · No. ${invoice.correlativo} · Emitida ${formatDate(invoice.issueDate)} · Vence ${formatDate(invoice.dueDate)}`
+            : `${invoice.partyName} · Emitida ${formatDate(invoice.issueDate)} · Vence ${formatDate(invoice.dueDate)}`
+        }
         actions={
           <div className="flex gap-2">
             {invoice.journalEntryId && (
@@ -52,6 +72,12 @@ export function InvoiceDetailPage() {
                 Ver asiento contable
               </Link>
             )}
+            <Button variant="outline" onClick={() => downloadPdfMutation.mutate()} disabled={downloadPdfMutation.isPending}>
+              <Download className="h-4 w-4" /> PDF
+            </Button>
+            <Button variant="outline" onClick={() => sendEmailMutation.mutate()} disabled={sendEmailMutation.isPending}>
+              <Mail className="h-4 w-4" /> {sendEmailMutation.isPending ? "Enviando..." : "Enviar por correo"}
+            </Button>
             {canCancel && (
               <Button variant="destructive" onClick={() => cancelMutation.mutate()} disabled={cancelMutation.isPending}>
                 Cancelar factura
@@ -62,6 +88,7 @@ export function InvoiceDetailPage() {
       />
 
       {error && <p className="mb-4 text-sm text-destructive">{error}</p>}
+      {emailSent && <p className="mb-4 text-sm text-success">Factura enviada por correo.</p>}
 
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <SummaryStat label="Estado" value={<StatusBadge status={invoice.status} />} />

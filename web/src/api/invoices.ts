@@ -1,4 +1,4 @@
-import { api } from "@/api/client";
+import { api, downloadFile } from "@/api/client";
 import type { Currency, PageResponse } from "@/types/common";
 import type { Invoice } from "@/types/domain";
 
@@ -25,4 +25,7 @@ export const invoicesApi = {
   get: (id: string) => api.get<Invoice>(`/invoices/${id}`),
   create: (request: CreateInvoiceRequest) => api.post<Invoice>("/invoices", request),
   cancel: (id: string) => api.post<Invoice>(`/invoices/${id}/cancel`),
+  sendEmail: (id: string) => api.post<Invoice>(`/invoices/${id}/send-email`),
+  downloadPdf: (id: string) => downloadFile(`/invoices/${id}/pdf`),
+  downloadExcel: () => downloadFile("/invoices/export"),
 };

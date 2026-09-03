@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Download } from "lucide-react";
 import { reportsApi } from "@/api/reports";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
@@ -13,6 +15,7 @@ export function IncomeStatementView() {
     queryKey: ["income-statement", from, to],
     queryFn: () => reportsApi.incomeStatement(from, to),
   });
+  const exportMutation = useMutation({ mutationFn: () => reportsApi.exportIncomeStatement(from, to) });
 
   return (
     <div>
@@ -25,6 +28,9 @@ export function IncomeStatementView() {
           <Label htmlFor="to">Hasta</Label>
           <Input id="to" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
         </div>
+        <Button variant="outline" onClick={() => exportMutation.mutate()} disabled={exportMutation.isPending}>
+          <Download className="h-4 w-4" /> Exportar Excel
+        </Button>
       </div>
       {isLoading || !data ? (
         <p className="text-sm text-muted-foreground">Cargando...</p>

@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Download } from "lucide-react";
 import { reportsApi } from "@/api/reports";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
@@ -47,6 +49,7 @@ function Section({ title, lines, total }: { title: string; lines: BalanceSheetLi
 export function BalanceSheetView() {
   const [asOf, setAsOf] = useState(todayIso());
   const { data, isLoading } = useQuery({ queryKey: ["balance-sheet", asOf], queryFn: () => reportsApi.balanceSheet(asOf) });
+  const exportMutation = useMutation({ mutationFn: () => reportsApi.exportBalanceSheet(asOf) });
 
   return (
     <div>
@@ -55,6 +58,9 @@ export function BalanceSheetView() {
           <Label htmlFor="asOf">Corte al</Label>
           <Input id="asOf" type="date" value={asOf} onChange={(e) => setAsOf(e.target.value)} />
         </div>
+        <Button variant="outline" onClick={() => exportMutation.mutate()} disabled={exportMutation.isPending}>
+          <Download className="h-4 w-4" /> Exportar Excel
+        </Button>
       </div>
       {isLoading || !data ? (
         <p className="text-sm text-muted-foreground">Cargando...</p>

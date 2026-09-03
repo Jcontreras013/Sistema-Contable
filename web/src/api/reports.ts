@@ -1,4 +1,4 @@
-import { api } from "@/api/client";
+import { api, downloadFile } from "@/api/client";
 import type {
   BalanceSheetResponse,
   DashboardKpisResponse,
@@ -16,4 +16,10 @@ export const reportsApi = {
     api.get<GeneralLedgerResponse>(`/reports/general-ledger/${accountId}`, { from, to }),
   dashboardKpis: (from?: string, to?: string) =>
     api.get<DashboardKpisResponse>("/reports/dashboard-kpis", { from, to }),
+  exportTrialBalance: (asOf?: string) => downloadFile("/reports/trial-balance/export", { asOf }),
+  exportBalanceSheet: (asOf?: string) => downloadFile("/reports/balance-sheet/export", { asOf }),
+  exportIncomeStatement: (from?: string, to?: string) =>
+    downloadFile("/reports/income-statement/export", { from, to }),
+  exportGeneralLedger: (accountId: string, from?: string, to?: string) =>
+    downloadFile(`/reports/general-ledger/${accountId}/export`, { from, to }),
 };

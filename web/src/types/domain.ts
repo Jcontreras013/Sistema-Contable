@@ -117,6 +117,32 @@ export interface Invoice {
   notes: string | null;
   createdAt: string;
   lines: InvoiceLine[];
+  correlativo: string | null;
+  caiCode: string | null;
+  caiEmissionLimitDate: string | null;
+}
+
+export interface CompanyProfile {
+  legalName: string;
+  rtn: string;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+}
+
+export interface CaiAuthorization {
+  id: string;
+  caiCode: string;
+  establishmentCode: string;
+  emissionPointCode: string;
+  documentTypeCode: string;
+  rangeStart: number;
+  rangeEnd: number;
+  currentNumber: number;
+  emissionLimitDate: string;
+  isActive: boolean;
+  createdByName: string;
+  createdAt: string;
 }
 
 export type ExpensePaymentMethod = "CASH" | "BANK" | "CREDIT";

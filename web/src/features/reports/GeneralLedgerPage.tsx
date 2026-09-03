@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
+import { Download } from "lucide-react";
 import { reportsApi } from "@/api/reports";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -18,6 +20,7 @@ export function GeneralLedgerPage() {
     queryFn: () => reportsApi.generalLedger(accountId!, from, to),
     enabled: !!accountId,
   });
+  const exportMutation = useMutation({ mutationFn: () => reportsApi.exportGeneralLedger(accountId!, from, to) });
 
   return (
     <div>
@@ -35,6 +38,9 @@ export function GeneralLedgerPage() {
           <Label htmlFor="to">Hasta</Label>
           <Input id="to" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
         </div>
+        <Button variant="outline" onClick={() => exportMutation.mutate()} disabled={exportMutation.isPending}>
+          <Download className="h-4 w-4" /> Exportar Excel
+        </Button>
       </div>
 
       {isLoading || !data ? (

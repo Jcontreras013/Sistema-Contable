@@ -67,6 +67,17 @@ gratis aparte, sin ese límite.
    | contador@demo.com | Demo1234! | Contador |
    | auditor@demo.com | Demo1234! | Auditor |
 
+## Paso 3 (opcional): correo y CAI real para facturar de verdad
+
+- **Enviar facturas por correo**: en Render → tu servicio → **Environment**, agrega
+  `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` y `MAIL_FROM` con los datos
+  de tu proveedor de correo (Gmail con contraseña de aplicación, SendGrid, etc.). Sin
+  esto, el botón "Enviar por correo" del sistema muestra un error explicando qué falta.
+- **Facturar con validez fiscal real**: el CAI que trae el sistema por defecto es de
+  ejemplo (no lo acepta el SAR). Solicita tu CAI real como autoimpresor y regístralo
+  en **Configuración fiscal** (menú lateral, solo Administrador) antes de usar el
+  sistema para facturar de verdad — ver la sección de límites conocidos en el README.
+
 ## Actualizar el sistema ya desplegado
 
 Cada vez que se hace `git push` a la rama `main` de este repo, Render reconstruye

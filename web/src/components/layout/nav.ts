@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   UserCog,
   Coins,
+  Stamp,
   type LucideIcon,
 } from "lucide-react";
 
@@ -30,5 +31,6 @@ export const navItems: NavItem[] = [
   { to: "/exchange-rates", label: "Tasas de cambio", icon: Coins, roles: ["ADMIN", "ACCOUNTANT"] },
   { to: "/reports", label: "Reportes", icon: TrendingUp },
   { to: "/users", label: "Usuarios", icon: UserCog, roles: ["ADMIN"] },
+  { to: "/fiscal-settings", label: "Configuración fiscal", icon: Stamp, roles: ["ADMIN"] },
   { to: "/audit-log", label: "Bitácora de auditoría", icon: ShieldCheck, roles: ["ADMIN", "AUDITOR"] },
 ];

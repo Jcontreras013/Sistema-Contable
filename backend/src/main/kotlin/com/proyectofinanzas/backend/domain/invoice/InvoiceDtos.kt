@@ -63,4 +63,7 @@ data class InvoiceResponse(
     val notes: String?,
     val createdAt: Instant,
     val lines: List<InvoiceLineResponse>,
+    val correlativo: String?,
+    val caiCode: String?,
+    val caiEmissionLimitDate: LocalDate?,
 )

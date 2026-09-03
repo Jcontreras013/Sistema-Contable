@@ -7,6 +7,7 @@ import java.util.UUID
 
 interface InvoiceRepository : JpaRepository<Invoice, UUID> {
     fun findAllByOrderByIssueDateDescInvoiceNumberDesc(pageable: Pageable): Page<Invoice>
+    fun findAllByOrderByIssueDateDescInvoiceNumberDesc(): List<Invoice>
 }
 
 interface InvoiceLineRepository : JpaRepository<InvoiceLine, UUID> {

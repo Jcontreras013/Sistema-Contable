@@ -80,6 +80,16 @@ class Invoice(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     var createdBy: User,
+
+    /** Correlativo fiscal SAR (formato NNN-NNN-NN-NNNNNNNN) asignado al emitir. */
+    @Column(length = 20, unique = true)
+    var correlativo: String? = null,
+
+    @Column(name = "cai_code", length = 50)
+    var caiCode: String? = null,
+
+    @Column(name = "cai_emission_limit_date")
+    var caiEmissionLimitDate: LocalDate? = null,
 ) : BaseEntity()
 
 @Entity

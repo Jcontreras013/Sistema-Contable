@@ -30,6 +30,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-mail")
+
+    implementation("com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10")
+    implementation("org.apache.poi:poi-ooxml:5.3.0")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")

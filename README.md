@@ -15,6 +15,10 @@ Monorepo con tres subproyectos independientes:
 - Contabilidad general de partida doble: plan de cuentas jerárquico, asientos manuales balanceados, reversión de asientos (los asientos contabilizados son inmutables).
 - Facturación e ingresos/gastos, en Lempiras (HNL) o Dólares (USD) con tasa de cambio (mantenida manualmente, sin integración a una API externa).
 - Cobros y pagos que liquidan cuentas por cobrar y por pagar reales (no solo lo facturado).
+- Facturación con correlativo fiscal SAR (formato Establecimiento-PuntoEmisión-TipoDocumento-
+  Correlativo) generado a partir de una autorización **CAI** registrada en Configuración fiscal;
+  PDF de factura con los datos del emisor y envío por correo con el PDF adjunto.
+- Exportación a Excel (.xlsx) de facturas y de los reportes financieros.
 - Reportes: balance de comprobación, balance general, estado de resultados, mayor por cuenta.
 - Dashboard con KPIs y gráficos (ingresos/gastos por mes, gastos por categoría).
 - Multiusuario con roles y bitácora de auditoría.
@@ -22,9 +26,15 @@ Monorepo con tres subproyectos independientes:
 ### Decisiones y límites conocidos
 
 - El plan de cuentas y la tasa de ISV (15%) sembrados son **ilustrativos** para Honduras, no asesoría fiscal formal.
+- El CAI sembrado por los datos demo es **ilustrativo y no válido ante el SAR**: el código real
+  hay que solicitarlo al SAR como autoimpresor (trámite legal, no técnico) y registrarlo en
+  **Configuración fiscal** antes de facturar de verdad — ver `installer/README.md`/`DEPLOY.md`.
+- El envío de facturas por correo requiere configurar un SMTP real (`SMTP_HOST`, `SMTP_PORT`,
+  `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM`); sin esas variables el envío falla con un mensaje
+  claro, pero el resto del sistema (incluido `/actuator/health`) sigue funcionando normalmente.
 - El balance general incluye una línea sintética de "Utilidad del ejercicio (no cerrada)", calculada en vivo; no existe un asiento formal de cierre de periodo.
 - Un usuario tiene un único rol (no hay matriz de permisos granular).
-- No hay exportación a PDF/Excel, presupuestos ni conciliación bancaria en esta fase.
+- No hay inventario, presupuestos ni conciliación bancaria en esta fase.
 
 ## Requisitos
 

@@ -15,6 +15,9 @@ RUN cd backend && ./gradlew --no-daemon bootJar -x test
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
+# fontconfig/dejavu: sin esto, la generación de PDF (openhtmltopdf) y de Excel (Apache POI)
+# puede fallar con errores de fuente en una imagen Alpine mínima (no traen fontconfig).
+RUN apk add --no-cache fontconfig ttf-dejavu
 RUN addgroup -S app && adduser -S app -G app
 COPY --from=build /workspace/backend/build/libs/*.jar app.jar
 USER app

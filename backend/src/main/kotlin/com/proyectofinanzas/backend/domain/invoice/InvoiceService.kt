@@ -6,6 +6,10 @@ import com.proyectofinanzas.backend.common.MoneyUtils
 import com.proyectofinanzas.backend.common.NotFoundException
 import com.proyectofinanzas.backend.domain.account.AccountRepository
 import com.proyectofinanzas.backend.domain.exchangerate.ExchangeRateService
+import com.proyectofinanzas.backend.domain.fiscal.CompanyProfileService
+import com.proyectofinanzas.backend.domain.fiscal.CorrelativoService
+import com.proyectofinanzas.backend.domain.fiscal.InvoiceMailService
+import com.proyectofinanzas.backend.domain.fiscal.InvoicePdfService
 import com.proyectofinanzas.backend.domain.journal.PostingService
 import com.proyectofinanzas.backend.domain.party.PartyRepository
 import com.proyectofinanzas.backend.domain.payment.PaymentRepository
@@ -31,6 +35,10 @@ class InvoiceService(
     private val paymentRepository: PaymentRepository,
     private val invoicePostingService: InvoicePostingService,
     private val postingService: PostingService,
+    private val correlativoService: CorrelativoService,
+    private val invoicePdfService: InvoicePdfService,
+    private val companyProfileService: CompanyProfileService,
+    private val invoiceMailService: InvoiceMailService,
 ) {
 
     fun create(request: CreateInvoiceRequest): InvoiceResponse {
@@ -63,6 +71,7 @@ class InvoiceService(
         )
         val total = subtotal + taxAmount
         val amountInBase = MoneyUtils.toBase(total, exchangeRate)
+        val correlativo = correlativoService.nextForFactura()
 
         val invoice = Invoice(
             party = party,
@@ -77,6 +86,9 @@ class InvoiceService(
             status = InvoiceStatus.ISSUED,
             notes = request.notes,
             createdBy = createdBy,
+            correlativo = correlativo.correlativo,
+            caiCode = correlativo.caiCode,
+            caiEmissionLimitDate = correlativo.emissionLimitDate,
         )
         // saveAndFlush: necesitamos el invoiceNumber generado por la secuencia de la BD
         // (vía @Generated) antes de usarlo en la descripción del asiento contable.
@@ -131,7 +143,39 @@ class InvoiceService(
             .map { toResponse(it, lines(requireNotNull(it.id))) }
 
     @Transactional(readOnly = true)
+    fun listAll(): List<InvoiceResponse> =
+        invoiceRepository.findAllByOrderByIssueDateDescInvoiceNumberDesc()
+            .map { toResponse(it, lines(requireNotNull(it.id))) }
+
+    @Transactional(readOnly = true)
     fun get(id: UUID): InvoiceResponse = toResponse(findEntity(id), lines(id))
+
+    @Transactional(readOnly = true)
+    fun renderPdf(id: UUID): ByteArray {
+        val invoice = findEntity(id)
+        return invoicePdfService.render(invoice, lines(id), companyProfileService.getEntity())
+    }
+
+    @Transactional(readOnly = true)
+    fun sendByEmail(id: UUID): InvoiceResponse {
+        val invoice = findEntity(id)
+        val email = invoice.party.email
+            ?: throw BusinessRuleException("El cliente '${invoice.party.name}' no tiene un correo registrado")
+        val invoiceLines = lines(id)
+        val pdfBytes = invoicePdfService.render(invoice, invoiceLines, companyProfileService.getEntity())
+        val companyName = companyProfileService.get()?.legalName ?: "Sistema Contable"
+        val label = invoice.correlativo ?: invoice.invoiceNumber.toString()
+        invoiceMailService.sendInvoice(
+            toEmail = email,
+            subject = "Factura $label - $companyName",
+            body = "Estimado(a) ${invoice.party.name},\n\n" +
+                "Adjunto tu factura $label por un total de ${invoice.total} ${invoice.currency}.\n\n" +
+                "Saludos,\n$companyName",
+            pdfBytes = pdfBytes,
+            pdfFilename = "factura-${invoice.invoiceNumber}.pdf",
+        )
+        return toResponse(invoice, invoiceLines)
+    }
 
     private fun lines(invoiceId: UUID) = invoiceLineRepository.findByInvoiceIdOrderByLineNumberAsc(invoiceId)
 
@@ -159,6 +203,9 @@ class InvoiceService(
             journalEntryId = invoice.journalEntry?.id,
             notes = invoice.notes,
             createdAt = requireNotNull(invoice.createdAt),
+            correlativo = invoice.correlativo,
+            caiCode = invoice.caiCode,
+            caiEmissionLimitDate = invoice.caiEmissionLimitDate,
             lines = lines.map {
                 InvoiceLineResponse(
                     id = requireNotNull(it.id),

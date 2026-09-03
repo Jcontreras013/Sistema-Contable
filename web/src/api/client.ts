@@ -68,3 +68,34 @@ export const api = {
   put: <T>(path: string, body?: unknown) => apiRequest<T>(path, { method: "PUT", body }),
   delete: <T>(path: string) => apiRequest<T>(path, { method: "DELETE" }),
 };
+
+/** Descarga un archivo (PDF/Excel) autenticado y dispara la descarga en el navegador. */
+export async function downloadFile(path: string, params?: RequestOptions["params"]): Promise<void> {
+  const token = tokenStorage.get();
+  const response = await fetch(buildUrl(path, params), {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+
+  if (response.status === 401) {
+    tokenStorage.clear();
+    window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+    throw new ApiRequestError("Sesión expirada", 401);
+  }
+
+  if (!response.ok) {
+    throw new ApiRequestError("No se pudo descargar el archivo", response.status);
+  }
+
+  const blob = await response.blob();
+  const disposition = response.headers.get("Content-Disposition") ?? "";
+  const filename = /filename="?([^"]+)"?/.exec(disposition)?.[1] ?? "descarga";
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
