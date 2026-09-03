@@ -37,8 +37,9 @@ Monorepo con tres subproyectos independientes:
 
 ### En la nube, gratis (para empezar a usarlo ya, sin instalar nada)
 
-Ver [`DEPLOY.md`](./DEPLOY.md) — despliega el sistema en Render con el archivo
-`render.yaml` de este repo (backend + PostgreSQL, plan gratis, para pruebas).
+Ver [`DEPLOY.md`](./DEPLOY.md) — despliega el backend en Render (con el archivo
+`render.yaml` de este repo) y la base de datos en Supabase, ambos en plan
+gratis, para pruebas.
 
 ### Windows: instalador de un solo clic (recomendado para usar la app, no para desarrollar)
 

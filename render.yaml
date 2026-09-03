@@ -1,9 +1,3 @@
-databases:
-  - name: contafin-db
-    databaseName: contafin
-    user: contafin
-    plan: free
-
 services:
   - type: web
     name: sistema-contable
@@ -17,23 +11,16 @@ services:
         generateValue: true
       - key: APP_SEED_ENABLED
         value: "true"
+      # Datos de conexión a la base de datos (Supabase). No tienen valor aquí a
+      # propósito: Render los pedirá al aplicar este blueprint, o se llenan luego
+      # a mano en el panel del servicio → Environment. Ver DEPLOY.md.
       - key: DB_HOST
-        fromDatabase:
-          name: contafin-db
-          property: host
+        sync: false
       - key: DB_PORT
-        fromDatabase:
-          name: contafin-db
-          property: port
+        sync: false
       - key: DB_NAME
-        fromDatabase:
-          name: contafin-db
-          property: database
+        sync: false
       - key: DB_USER
-        fromDatabase:
-          name: contafin-db
-          property: user
+        sync: false
       - key: DB_PASSWORD
-        fromDatabase:
-          name: contafin-db
-          property: password
+        sync: false
