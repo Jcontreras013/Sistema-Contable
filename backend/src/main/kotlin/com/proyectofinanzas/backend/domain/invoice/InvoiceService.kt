@@ -138,9 +138,8 @@ class InvoiceService(
     }
 
     @Transactional(readOnly = true)
-    fun list(pageable: Pageable): Page<InvoiceResponse> =
-        invoiceRepository.findAllByOrderByIssueDateDescInvoiceNumberDesc(pageable)
-            .map { toResponse(it, lines(requireNotNull(it.id))) }
+    fun list(pageable: Pageable, search: String? = null): Page<InvoiceResponse> =
+        invoiceRepository.search(search, pageable).map { toResponse(it, lines(requireNotNull(it.id))) }
 
     @Transactional(readOnly = true)
     fun listAll(): List<InvoiceResponse> =

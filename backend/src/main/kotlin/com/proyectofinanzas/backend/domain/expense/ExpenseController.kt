@@ -21,8 +21,11 @@ class ExpenseController(
     private val expenseService: ExpenseService,
 ) {
     @GetMapping
-    fun list(pageable: Pageable, @RequestParam(required = false) partyId: UUID?): Page<ExpenseResponse> =
-        expenseService.list(pageable, partyId)
+    fun list(
+        pageable: Pageable,
+        @RequestParam(required = false) partyId: UUID?,
+        @RequestParam(required = false) search: String?,
+    ): Page<ExpenseResponse> = expenseService.list(pageable, partyId, search)
 
     @GetMapping("/{id}")
     fun get(@PathVariable id: UUID): ExpenseResponse = expenseService.get(id)

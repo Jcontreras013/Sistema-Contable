@@ -21,7 +21,8 @@ export interface CreateInvoiceRequest {
 }
 
 export const invoicesApi = {
-  list: (page = 0, size = 20) => api.get<PageResponse<Invoice>>("/invoices", { page, size }),
+  list: (page = 0, size = 20, search?: string) =>
+    api.get<PageResponse<Invoice>>("/invoices", { page, size, search }),
   get: (id: string) => api.get<Invoice>(`/invoices/${id}`),
   create: (request: CreateInvoiceRequest) => api.post<Invoice>("/invoices", request),
   cancel: (id: string) => api.post<Invoice>(`/invoices/${id}/cancel`),

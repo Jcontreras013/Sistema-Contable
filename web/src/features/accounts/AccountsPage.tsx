@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Plus, ScrollText } from "lucide-react";
+import { Plus, ScrollText, Search } from "lucide-react";
 import { accountsApi, type AccountRequest } from "@/api/accounts";
 import { ApiRequestError } from "@/api/client";
 import { useAuth } from "@/auth/AuthContext";
@@ -51,8 +51,14 @@ export function AccountsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<AccountRequest>(emptyForm);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   const sorted = useMemo(() => [...(accounts ?? [])].sort((a, b) => a.code.localeCompare(b.code)), [accounts]);
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return sorted;
+    return sorted.filter((a) => a.code.toLowerCase().includes(q) || a.name.toLowerCase().includes(q));
+  }, [sorted, search]);
 
   const saveMutation = useMutation({
     mutationFn: () => (editingId ? accountsApi.update(editingId, form) : accountsApi.create(form)),
@@ -185,6 +191,16 @@ export function AccountsPage() {
         </Card>
       )}
 
+      <div className="relative mb-4 max-w-sm">
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          className="pl-8"
+          placeholder="Buscar por código o nombre..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Cargando...</p>
       ) : (
@@ -200,7 +216,14 @@ export function AccountsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sorted.map((account) => (
+            {filtered.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center text-sm text-muted-foreground">
+                  Sin resultados.
+                </TableCell>
+              </TableRow>
+            )}
+            {filtered.map((account) => (
               <TableRow key={account.id} className={!account.isActive ? "opacity-50" : undefined}>
                 <TableCell className="font-mono">{account.code}</TableCell>
                 <TableCell className={account.allowsPosting ? "" : "font-semibold"}>{account.name}</TableCell>

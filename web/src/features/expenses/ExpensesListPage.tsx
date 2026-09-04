@@ -1,19 +1,24 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { expensesApi } from "@/api/expenses";
 import { useAuth } from "@/auth/AuthContext";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDate, formatMoney } from "@/lib/format";
 
 export function ExpensesListPage() {
   const { hasRole } = useAuth();
   const [page, setPage] = useState(0);
-  const { data, isLoading } = useQuery({ queryKey: ["expenses", page], queryFn: () => expensesApi.list(page) });
+  const [search, setSearch] = useState("");
+  const { data, isLoading } = useQuery({
+    queryKey: ["expenses", page, search],
+    queryFn: () => expensesApi.list(page, 20, undefined, search || undefined),
+  });
 
   return (
     <div>
@@ -26,6 +31,16 @@ export function ExpensesListPage() {
           ) : undefined
         }
       />
+
+      <div className="relative mb-4 max-w-sm">
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          className="pl-8"
+          placeholder="Buscar por descripción, proveedor o número..."
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+        />
+      </div>
 
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Cargando...</p>
@@ -45,6 +60,13 @@ export function ExpensesListPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {data?.content.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center text-sm text-muted-foreground">
+                    Sin resultados.
+                  </TableCell>
+                </TableRow>
+              )}
               {data?.content.map((expense) => (
                 <TableRow key={expense.id}>
                   <TableCell className="font-mono">{expense.expenseNumber}</TableCell>

@@ -25,6 +25,7 @@ Monorepo con tres subproyectos independientes:
 - Ficha de proveedor ampliada: régimen fiscal, si es agente retenedor de ISR/ISV y su porcentaje
   de retención, varios correos de contacto, y un detalle por proveedor con el historial de
   gastos que se le han registrado.
+- Buscador de texto en Facturas, Gastos, Libro mayor, Proveedores y Productos.
 - Reportes: balance de comprobación, balance general, estado de resultados, mayor por cuenta.
 - Dashboard con KPIs y gráficos (ingresos/gastos por mes, gastos por categoría).
 - Multiusuario con roles y bitácora de auditoría.

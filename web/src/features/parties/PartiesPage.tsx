@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Plus, X } from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 import { partiesApi, type PartyRequest } from "@/api/parties";
 import { ApiRequestError } from "@/api/client";
 import { useAuth } from "@/auth/AuthContext";
@@ -50,6 +50,15 @@ export function PartiesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<PartyRequest>(emptyForm);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+
+  const filteredParties = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return parties ?? [];
+    return (parties ?? []).filter(
+      (p) => p.name.toLowerCase().includes(q) || (p.rtn ?? "").toLowerCase().includes(q),
+    );
+  }, [parties, search]);
 
   const saveMutation = useMutation({
     mutationFn: () => {
@@ -241,6 +250,16 @@ export function PartiesPage() {
         </Card>
       )}
 
+      <div className="relative mb-4 max-w-sm">
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          className="pl-8"
+          placeholder="Buscar por nombre o RTN..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Cargando...</p>
       ) : (
@@ -256,7 +275,14 @@ export function PartiesPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {(parties ?? []).map((party) => (
+            {filteredParties.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center text-sm text-muted-foreground">
+                  Sin resultados.
+                </TableCell>
+              </TableRow>
+            )}
+            {filteredParties.map((party) => (
               <TableRow key={party.id} className={!party.isActive ? "opacity-50" : undefined}>
                 <TableCell className="font-medium">{party.name}</TableCell>
                 <TableCell>{PARTY_TYPE_LABELS[party.type]}</TableCell>

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { accountsApi } from "@/api/accounts";
 import { productsApi, type ProductRequest } from "@/api/products";
 import { ApiRequestError } from "@/api/client";
@@ -27,11 +27,19 @@ export function ProductsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<ProductRequest>(emptyForm);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   const postingAccounts = useMemo(
     () => (accounts ?? []).filter((a) => a.allowsPosting && a.isActive),
     [accounts],
   );
+  const filteredProducts = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return products ?? [];
+    return (products ?? []).filter(
+      (p) => p.description.toLowerCase().includes(q) || p.accountName.toLowerCase().includes(q) || p.accountCode.includes(q),
+    );
+  }, [products, search]);
 
   const saveMutation = useMutation({
     mutationFn: () => (editingId ? productsApi.update(editingId, form) : productsApi.create(form)),
@@ -120,6 +128,16 @@ export function ProductsPage() {
         </Card>
       )}
 
+      <div className="relative mb-4 max-w-sm">
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          className="pl-8"
+          placeholder="Buscar por descripción o cuenta..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Cargando...</p>
       ) : (
@@ -133,7 +151,14 @@ export function ProductsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {(products ?? []).map((product) => (
+            {filteredProducts.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={canEdit ? 4 : 3} className="text-center text-sm text-muted-foreground">
+                  Sin resultados.
+                </TableCell>
+              </TableRow>
+            )}
+            {filteredProducts.map((product) => (
               <TableRow key={product.id} className={!product.isActive ? "opacity-50" : undefined}>
                 <TableCell className="font-medium">{product.description}</TableCell>
                 <TableCell className="text-xs text-muted-foreground">
