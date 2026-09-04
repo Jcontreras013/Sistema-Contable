@@ -1,5 +1,5 @@
 import { api } from "@/api/client";
-import type { Party, PartyType } from "@/types/domain";
+import type { Party, PartyType, TaxRegime } from "@/types/domain";
 
 export interface PartyRequest {
   type: PartyType;
@@ -9,6 +9,11 @@ export interface PartyRequest {
   phone?: string | null;
   address?: string | null;
   isActive: boolean;
+  taxRegime?: TaxRegime | null;
+  isrWithholdingAgent: boolean;
+  isvWithholdingAgent: boolean;
+  withholdingRate?: string | null;
+  additionalEmails: string[];
 }
 
 export const partiesApi = {

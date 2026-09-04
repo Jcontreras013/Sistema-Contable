@@ -1,17 +1,18 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Plus, X } from "lucide-react";
 import { partiesApi, type PartyRequest } from "@/api/parties";
 import { ApiRequestError } from "@/api/client";
 import { useAuth } from "@/auth/AuthContext";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { Party, PartyType } from "@/types/domain";
+import type { Party, PartyType, TaxRegime } from "@/types/domain";
 
 const PARTY_TYPE_LABELS: Record<PartyType, string> = {
   CUSTOMER: "Cliente",
@@ -19,7 +20,25 @@ const PARTY_TYPE_LABELS: Record<PartyType, string> = {
   BOTH: "Cliente y proveedor",
 };
 
-const emptyForm: PartyRequest = { type: "CUSTOMER", name: "", rtn: "", email: "", phone: "", address: "", isActive: true };
+const TAX_REGIME_LABELS: Record<TaxRegime, string> = {
+  ORDINARIO: "Ordinario",
+  SIMPLIFICADO: "Simplificado",
+};
+
+const emptyForm: PartyRequest = {
+  type: "CUSTOMER",
+  name: "",
+  rtn: "",
+  email: "",
+  phone: "",
+  address: "",
+  isActive: true,
+  taxRegime: null,
+  isrWithholdingAgent: false,
+  isvWithholdingAgent: false,
+  withholdingRate: "",
+  additionalEmails: [],
+};
 
 export function PartiesPage() {
   const { hasRole } = useAuth();
@@ -33,7 +52,10 @@ export function PartiesPage() {
   const [error, setError] = useState<string | null>(null);
 
   const saveMutation = useMutation({
-    mutationFn: () => (editingId ? partiesApi.update(editingId, form) : partiesApi.create(form)),
+    mutationFn: () => {
+      const payload = { ...form, additionalEmails: form.additionalEmails.filter((e) => e.trim() !== "") };
+      return editingId ? partiesApi.update(editingId, payload) : partiesApi.create(payload);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["parties"] });
       setShowForm(false);
@@ -59,9 +81,16 @@ export function PartiesPage() {
       phone: party.phone ?? "",
       address: party.address ?? "",
       isActive: party.isActive,
+      taxRegime: party.taxRegime,
+      isrWithholdingAgent: party.isrWithholdingAgent,
+      isvWithholdingAgent: party.isvWithholdingAgent,
+      withholdingRate: party.withholdingRate ?? "",
+      additionalEmails: [...party.additionalEmails],
     });
     setShowForm(true);
   };
+
+  const isWithholdingAgent = form.isrWithholdingAgent || form.isvWithholdingAgent;
 
   return (
     <div>
@@ -101,7 +130,7 @@ export function PartiesPage() {
                 <Input id="rtn" value={form.rtn ?? ""} onChange={(e) => setForm({ ...form, rtn: e.target.value })} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="email">Correo</Label>
+                <Label htmlFor="email">Correo principal</Label>
                 <Input id="email" type="email" value={form.email ?? ""} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               </div>
               <div className="space-y-1.5">
@@ -112,7 +141,91 @@ export function PartiesPage() {
                 <Label htmlFor="address">Dirección</Label>
                 <Input id="address" value={form.address ?? ""} onChange={(e) => setForm({ ...form, address: e.target.value })} />
               </div>
-              <label className="flex items-center gap-2 text-sm">
+
+              <div className="space-y-1.5 sm:col-span-3">
+                <Label>Correos adicionales</Label>
+                <div className="space-y-2">
+                  {form.additionalEmails.map((email, i) => (
+                    <div key={i} className="flex gap-2">
+                      <Input
+                        type="email"
+                        value={email}
+                        placeholder="correo@ejemplo.com"
+                        onChange={(e) => {
+                          const next = [...form.additionalEmails];
+                          next[i] = e.target.value;
+                          setForm({ ...form, additionalEmails: next });
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setForm({ ...form, additionalEmails: form.additionalEmails.filter((_, j) => j !== i) })}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setForm({ ...form, additionalEmails: [...form.additionalEmails, ""] })}
+                  >
+                    <Plus className="h-4 w-4" /> Agregar correo
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-1.5 sm:col-span-3">
+                <p className="text-sm font-medium">Información fiscal</p>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="taxRegime">Régimen fiscal</Label>
+                <Select
+                  id="taxRegime"
+                  value={form.taxRegime ?? ""}
+                  onChange={(e) => setForm({ ...form, taxRegime: (e.target.value || null) as TaxRegime | null })}
+                >
+                  <option value="">— Sin especificar —</option>
+                  {Object.entries(TAX_REGIME_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </Select>
+              </div>
+              <label className="flex items-center gap-2 self-end text-sm">
+                <input
+                  type="checkbox"
+                  checked={form.isrWithholdingAgent}
+                  onChange={(e) => setForm({ ...form, isrWithholdingAgent: e.target.checked })}
+                />
+                Agente retenedor de ISR
+              </label>
+              <label className="flex items-center gap-2 self-end text-sm">
+                <input
+                  type="checkbox"
+                  checked={form.isvWithholdingAgent}
+                  onChange={(e) => setForm({ ...form, isvWithholdingAgent: e.target.checked })}
+                />
+                Agente retenedor de ISV
+              </label>
+              {isWithholdingAgent && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="withholdingRate">% de retención aplicable</Label>
+                  <Input
+                    id="withholdingRate"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    value={form.withholdingRate ?? ""}
+                    onChange={(e) => setForm({ ...form, withholdingRate: e.target.value })}
+                  />
+                </div>
+              )}
+
+              <label className="flex items-center gap-2 self-end text-sm">
                 <input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} />
                 Activo
               </label>
@@ -139,7 +252,7 @@ export function PartiesPage() {
               <TableHead>RTN</TableHead>
               <TableHead>Contacto</TableHead>
               <TableHead>Estado</TableHead>
-              {canEdit && <TableHead className="text-right">Acciones</TableHead>}
+              <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -150,16 +263,21 @@ export function PartiesPage() {
                 <TableCell className="font-mono text-xs">{party.rtn || "—"}</TableCell>
                 <TableCell className="text-xs text-muted-foreground">{party.email || party.phone || "—"}</TableCell>
                 <TableCell>{party.isActive ? "Activo" : "Inactivo"}</TableCell>
-                {canEdit && (
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => startEdit(party)}>Editar</Button>
-                      {party.isActive && (
-                        <Button variant="ghost" size="sm" onClick={() => deactivateMutation.mutate(party.id)}>Desactivar</Button>
-                      )}
-                    </div>
-                  </TableCell>
-                )}
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-1">
+                    <Link to={`/parties/${party.id}`} className={buttonVariants({ variant: "ghost", size: "sm" })}>
+                      Detalle
+                    </Link>
+                    {canEdit && (
+                      <>
+                        <Button variant="ghost" size="sm" onClick={() => startEdit(party)}>Editar</Button>
+                        {party.isActive && (
+                          <Button variant="ghost" size="sm" onClick={() => deactivateMutation.mutate(party.id)}>Desactivar</Button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -1,7 +1,10 @@
 package com.proyectofinanzas.backend.domain.party
 
+import jakarta.validation.constraints.DecimalMax
+import jakarta.validation.constraints.DecimalMin
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
+import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
 
@@ -13,6 +16,11 @@ data class PartyRequest(
     val phone: String? = null,
     val address: String? = null,
     val isActive: Boolean = true,
+    val taxRegime: TaxRegime? = null,
+    val isrWithholdingAgent: Boolean = false,
+    val isvWithholdingAgent: Boolean = false,
+    @field:DecimalMin(value = "0") @field:DecimalMax(value = "100") val withholdingRate: BigDecimal? = null,
+    val additionalEmails: List<String> = emptyList(),
 )
 
 data class PartyResponse(
@@ -24,6 +32,11 @@ data class PartyResponse(
     val phone: String?,
     val address: String?,
     val isActive: Boolean,
+    val taxRegime: TaxRegime?,
+    val isrWithholdingAgent: Boolean,
+    val isvWithholdingAgent: Boolean,
+    val withholdingRate: BigDecimal?,
+    val additionalEmails: List<String>,
     val createdAt: Instant,
 ) {
     companion object {
@@ -36,6 +49,11 @@ data class PartyResponse(
             phone = party.phone,
             address = party.address,
             isActive = party.isActive,
+            taxRegime = party.taxRegime,
+            isrWithholdingAgent = party.isrWithholdingAgent,
+            isvWithholdingAgent = party.isvWithholdingAgent,
+            withholdingRate = party.withholdingRate,
+            additionalEmails = party.additionalEmails.toList(),
             createdAt = requireNotNull(party.createdAt),
         )
     }

@@ -6,6 +6,7 @@ import { LoginPage } from "@/auth/LoginPage";
 import { ForbiddenPage, NotFoundPage } from "@/app/StatusPages";
 import { AccountsPage } from "@/features/accounts/AccountsPage";
 import { PartiesPage } from "@/features/parties/PartiesPage";
+import { PartyDetailPage } from "@/features/parties/PartyDetailPage";
 import { ProductsPage } from "@/features/products/ProductsPage";
 import { ExchangeRatesPage } from "@/features/exchange-rates/ExchangeRatesPage";
 import { JournalEntriesListPage } from "@/features/journal-entries/JournalEntriesListPage";
@@ -33,6 +34,7 @@ export default function App() {
           <Route index element={<Navigate to="/reports" replace />} />
           <Route path="accounts" element={<AccountsPage />} />
           <Route path="parties" element={<PartiesPage />} />
+          <Route path="parties/:id" element={<PartyDetailPage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="journal-entries" element={<JournalEntriesListPage />} />
           <Route path="journal-entries/new" element={<JournalEntryNewPage />} />

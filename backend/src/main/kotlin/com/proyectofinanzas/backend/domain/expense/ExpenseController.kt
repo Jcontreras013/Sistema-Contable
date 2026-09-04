@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
@@ -20,7 +21,8 @@ class ExpenseController(
     private val expenseService: ExpenseService,
 ) {
     @GetMapping
-    fun list(pageable: Pageable): Page<ExpenseResponse> = expenseService.list(pageable)
+    fun list(pageable: Pageable, @RequestParam(required = false) partyId: UUID?): Page<ExpenseResponse> =
+        expenseService.list(pageable, partyId)
 
     @GetMapping("/{id}")
     fun get(@PathVariable id: UUID): ExpenseResponse = expenseService.get(id)

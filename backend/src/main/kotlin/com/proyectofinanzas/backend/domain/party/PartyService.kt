@@ -25,6 +25,11 @@ class PartyService(
             phone = request.phone,
             address = request.address,
             isActive = request.isActive,
+            taxRegime = request.taxRegime,
+            isrWithholdingAgent = request.isrWithholdingAgent,
+            isvWithholdingAgent = request.isvWithholdingAgent,
+            withholdingRate = request.withholdingRate,
+            additionalEmails = request.additionalEmails.toMutableList(),
         )
         return PartyResponse.from(partyRepository.save(party))
     }
@@ -38,6 +43,11 @@ class PartyService(
         party.phone = request.phone
         party.address = request.address
         party.isActive = request.isActive
+        party.taxRegime = request.taxRegime
+        party.isrWithholdingAgent = request.isrWithholdingAgent
+        party.isvWithholdingAgent = request.isvWithholdingAgent
+        party.withholdingRate = request.withholdingRate
+        party.additionalEmails = request.additionalEmails.toMutableList()
         return PartyResponse.from(partyRepository.save(party))
     }
 

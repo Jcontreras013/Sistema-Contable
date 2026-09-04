@@ -34,6 +34,7 @@ export interface Account {
 }
 
 export type PartyType = "CUSTOMER" | "VENDOR" | "BOTH";
+export type TaxRegime = "ORDINARIO" | "SIMPLIFICADO";
 
 export interface Party {
   id: string;
@@ -44,6 +45,11 @@ export interface Party {
   phone: string | null;
   address: string | null;
   isActive: boolean;
+  taxRegime: TaxRegime | null;
+  isrWithholdingAgent: boolean;
+  isvWithholdingAgent: boolean;
+  withholdingRate: string | null;
+  additionalEmails: string[];
   createdAt: string;
 }
 

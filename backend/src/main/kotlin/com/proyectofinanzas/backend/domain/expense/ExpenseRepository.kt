@@ -7,4 +7,5 @@ import java.util.UUID
 
 interface ExpenseRepository : JpaRepository<Expense, UUID> {
     fun findAllByOrderByExpenseDateDescExpenseNumberDesc(pageable: Pageable): Page<Expense>
+    fun findAllByPartyIdOrderByExpenseDateDescExpenseNumberDesc(partyId: UUID, pageable: Pageable): Page<Expense>
 }

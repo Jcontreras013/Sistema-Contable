@@ -104,8 +104,14 @@ class ExpenseService(
     }
 
     @Transactional(readOnly = true)
-    fun list(pageable: Pageable): Page<ExpenseResponse> =
-        expenseRepository.findAllByOrderByExpenseDateDescExpenseNumberDesc(pageable).map { toResponse(it) }
+    fun list(pageable: Pageable, partyId: UUID? = null): Page<ExpenseResponse> =
+        (
+            if (partyId != null) {
+                expenseRepository.findAllByPartyIdOrderByExpenseDateDescExpenseNumberDesc(partyId, pageable)
+            } else {
+                expenseRepository.findAllByOrderByExpenseDateDescExpenseNumberDesc(pageable)
+            }
+        ).map { toResponse(it) }
 
     @Transactional(readOnly = true)
     fun get(id: UUID): ExpenseResponse = toResponse(findEntity(id))

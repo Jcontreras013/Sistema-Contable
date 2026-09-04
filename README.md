@@ -22,6 +22,9 @@ Monorepo con tres subproyectos independientes:
 - Catálogo de productos/servicios de compra: cada producto se enlaza a una cuenta contable, así
   que al registrar un gasto basta con elegir el producto y la cuenta correcta se selecciona (y
   contabiliza) sola, sin tener que conocer el plan de cuentas de memoria.
+- Ficha de proveedor ampliada: régimen fiscal, si es agente retenedor de ISR/ISV y su porcentaje
+  de retención, varios correos de contacto, y un detalle por proveedor con el historial de
+  gastos que se le han registrado.
 - Reportes: balance de comprobación, balance general, estado de resultados, mayor por cuenta.
 - Dashboard con KPIs y gráficos (ingresos/gastos por mes, gastos por categoría).
 - Multiusuario con roles y bitácora de auditoría.
