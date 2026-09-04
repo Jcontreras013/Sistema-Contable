@@ -3,10 +3,12 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { cn } from "@/lib/utils";
 import { BalanceSheetView } from "@/features/reports/BalanceSheetView";
 import { DashboardView } from "@/features/reports/DashboardView";
+import { HomeView } from "@/features/reports/HomeView";
 import { IncomeStatementView } from "@/features/reports/IncomeStatementView";
 import { TrialBalanceView } from "@/features/reports/TrialBalanceView";
 
 const TABS = [
+  { key: "inicio", label: "Inicio" },
   { key: "panel", label: "Panel" },
   { key: "trial-balance", label: "Balance de comprobación" },
   { key: "balance-sheet", label: "Balance general" },
@@ -16,11 +18,11 @@ const TABS = [
 type TabKey = (typeof TABS)[number]["key"];
 
 export function ReportsPage() {
-  const [tab, setTab] = useState<TabKey>("panel");
+  const [tab, setTab] = useState<TabKey>("inicio");
 
   return (
     <div>
-      <PageHeader title="Reportes financieros" description="Panel general y estados financieros de la empresa." />
+      <PageHeader title="Reportes financieros" description="Accesos rápidos, panel general y estados financieros de la empresa." />
 
       <div className="mb-6 flex gap-1 border-b border-border">
         {TABS.map((t) => (
@@ -37,6 +39,7 @@ export function ReportsPage() {
         ))}
       </div>
 
+      {tab === "inicio" && <HomeView />}
       {tab === "panel" && <DashboardView />}
       {tab === "trial-balance" && <TrialBalanceView />}
       {tab === "balance-sheet" && <BalanceSheetView />}
