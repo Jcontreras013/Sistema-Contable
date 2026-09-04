@@ -4,7 +4,6 @@ import { RequireAuth } from "@/auth/RequireAuth";
 import { RequireRole } from "@/auth/RequireRole";
 import { LoginPage } from "@/auth/LoginPage";
 import { ForbiddenPage, NotFoundPage } from "@/app/StatusPages";
-import { DashboardPage } from "@/features/dashboard/DashboardPage";
 import { AccountsPage } from "@/features/accounts/AccountsPage";
 import { PartiesPage } from "@/features/parties/PartiesPage";
 import { ProductsPage } from "@/features/products/ProductsPage";
@@ -31,7 +30,7 @@ export default function App() {
 
       <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>
-          <Route index element={<DashboardPage />} />
+          <Route index element={<Navigate to="/reports" replace />} />
           <Route path="accounts" element={<AccountsPage />} />
           <Route path="parties" element={<PartiesPage />} />
           <Route path="products" element={<ProductsPage />} />

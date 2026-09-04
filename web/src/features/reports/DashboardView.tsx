@@ -3,11 +3,10 @@ import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAx
 import { ArrowDownCircle, ArrowUpCircle, Landmark, Scale, Wallet } from "lucide-react";
 import { reportsApi } from "@/api/reports";
 import { KpiCard } from "@/components/KpiCard";
-import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatMoney } from "@/lib/format";
 
-export function DashboardPage() {
+export function DashboardView() {
   const { data: kpis, isLoading } = useQuery({ queryKey: ["dashboard-kpis"], queryFn: () => reportsApi.dashboardKpis() });
 
   if (isLoading || !kpis) return <p className="text-sm text-muted-foreground">Cargando...</p>;
@@ -25,7 +24,7 @@ export function DashboardPage() {
 
   return (
     <div>
-      <PageHeader title="Panel principal" description={`Del ${kpis.from} al ${kpis.to}`} />
+      <p className="mb-4 text-sm text-muted-foreground">Del {kpis.from} al {kpis.to}</p>
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Ingresos del período" value={formatMoney(kpis.revenueInPeriod)} icon={ArrowUpCircle} tone="positive" />

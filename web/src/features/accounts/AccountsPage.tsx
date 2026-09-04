@@ -94,8 +94,8 @@ export function AccountsPage() {
   return (
     <div>
       <PageHeader
-        title="Plan de cuentas"
-        description="Catálogo jerárquico de cuentas contables."
+        title="Libro mayor"
+        description="Plan de cuentas: selecciona una cuenta para ver su mayor (movimientos y saldo)."
         actions={canEdit ? <Button onClick={startCreate}><Plus className="h-4 w-4" /> Nueva cuenta</Button> : undefined}
       />
 

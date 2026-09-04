@@ -1,6 +1,5 @@
 import type { Role } from "@/types/domain";
 import {
-  LayoutDashboard,
   BookOpen,
   Users,
   ScrollText,
@@ -23,9 +22,8 @@ export interface NavItem {
 }
 
 export const navItems: NavItem[] = [
-  { to: "/", label: "Panel principal", icon: LayoutDashboard },
-  { to: "/accounts", label: "Plan de cuentas", icon: BookOpen },
-  { to: "/parties", label: "Terceros", icon: Users },
+  { to: "/accounts", label: "Libro mayor", icon: BookOpen },
+  { to: "/parties", label: "Proveedores", icon: Users },
   { to: "/products", label: "Productos", icon: Package },
   { to: "/journal-entries", label: "Asientos contables", icon: ScrollText },
   { to: "/invoices", label: "Facturas", icon: FileText },

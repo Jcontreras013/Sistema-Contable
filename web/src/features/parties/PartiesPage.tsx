@@ -66,8 +66,8 @@ export function PartiesPage() {
   return (
     <div>
       <PageHeader
-        title="Terceros"
-        description="Clientes y proveedores para facturación y gastos."
+        title="Proveedores"
+        description="Proveedores y clientes para gastos y facturación."
         actions={
           canEdit ? (
             <Button onClick={() => { setEditingId(null); setForm(emptyForm); setShowForm(true); }}>
