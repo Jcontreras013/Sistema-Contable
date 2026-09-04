@@ -11,6 +11,7 @@ import {
   UserCog,
   Coins,
   Stamp,
+  Package,
   type LucideIcon,
 } from "lucide-react";
 
@@ -25,6 +26,7 @@ export const navItems: NavItem[] = [
   { to: "/", label: "Panel principal", icon: LayoutDashboard },
   { to: "/accounts", label: "Plan de cuentas", icon: BookOpen },
   { to: "/parties", label: "Terceros", icon: Users },
+  { to: "/products", label: "Productos", icon: Package },
   { to: "/journal-entries", label: "Asientos contables", icon: ScrollText },
   { to: "/invoices", label: "Facturas", icon: FileText },
   { to: "/expenses", label: "Gastos", icon: Receipt },

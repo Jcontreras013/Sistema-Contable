@@ -7,7 +7,8 @@ export interface CreateExpenseRequest {
   expenseDate: string;
   currency: Currency;
   exchangeRate?: string | null;
-  accountId: string;
+  productId?: string | null;
+  accountId?: string | null;
   description: string;
   paymentMethod: ExpensePaymentMethod;
   amount: string;

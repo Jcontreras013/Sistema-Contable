@@ -9,6 +9,7 @@ import com.proyectofinanzas.backend.domain.exchangerate.ExchangeRateService
 import com.proyectofinanzas.backend.domain.journal.PostingService
 import com.proyectofinanzas.backend.domain.party.PartyRepository
 import com.proyectofinanzas.backend.domain.payment.PaymentRepository
+import com.proyectofinanzas.backend.domain.product.ProductRepository
 import com.proyectofinanzas.backend.domain.user.UserRepository
 import com.proyectofinanzas.backend.security.SecurityUtils
 import org.springframework.data.domain.Page
@@ -30,14 +31,22 @@ class ExpenseService(
     private val paymentRepository: PaymentRepository,
     private val expensePostingService: ExpensePostingService,
     private val postingService: PostingService,
+    private val productRepository: ProductRepository,
 ) {
 
     fun create(request: CreateExpenseRequest): ExpenseResponse {
         val party = request.partyId?.let {
             partyRepository.findById(it).orElseThrow { NotFoundException("Tercero no encontrado") }
         }
-        val account = accountRepository.findById(request.accountId)
-            .orElseThrow { NotFoundException("Cuenta no encontrada") }
+        val product = request.productId?.let {
+            productRepository.findById(it).orElseThrow { NotFoundException("Producto no encontrado") }
+        }
+        val account = when {
+            product != null -> product.account
+            request.accountId != null -> accountRepository.findById(request.accountId)
+                .orElseThrow { NotFoundException("Cuenta no encontrada") }
+            else -> throw BusinessRuleException("Selecciona un producto o una cuenta de gasto")
+        }
         val createdBy = userRepository.findById(SecurityUtils.currentUserId())
             .orElseThrow { NotFoundException("Usuario no encontrado") }
 
@@ -61,6 +70,7 @@ class ExpenseService(
             amountInBase = amountInBase,
             status = ExpenseStatus.POSTED,
             createdBy = createdBy,
+            product = product,
         )
         // saveAndFlush: necesitamos el expenseNumber generado por la secuencia de la BD
         // (vía @Generated) antes de usarlo en la descripción del asiento contable.
@@ -115,6 +125,8 @@ class ExpenseService(
             exchangeRate = expense.exchangeRate,
             accountId = requireNotNull(expense.account.id),
             accountName = expense.account.name,
+            productId = expense.product?.id,
+            productDescription = expense.product?.description,
             description = expense.description,
             paymentMethod = expense.paymentMethod,
             amount = expense.amount,

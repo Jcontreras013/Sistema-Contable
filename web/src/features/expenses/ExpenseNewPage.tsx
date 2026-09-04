@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { accountsApi } from "@/api/accounts";
 import { partiesApi } from "@/api/parties";
+import { productsApi } from "@/api/products";
 import { ApiRequestError } from "@/api/client";
 import { expensesApi } from "@/api/expenses";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -20,17 +21,24 @@ export function ExpenseNewPage() {
   const queryClient = useQueryClient();
   const { data: accounts } = useQuery({ queryKey: ["accounts"], queryFn: accountsApi.list });
   const { data: parties } = useQuery({ queryKey: ["parties"], queryFn: partiesApi.list });
+  const { data: products } = useQuery({ queryKey: ["products"], queryFn: productsApi.list });
 
   const [partyId, setPartyId] = useState("");
   const [expenseDate, setExpenseDate] = useState(todayIso());
   const [currency, setCurrency] = useState<Currency>("HNL");
   const [exchangeRate, setExchangeRate] = useState("");
+  const [productId, setProductId] = useState("");
   const [accountId, setAccountId] = useState("");
   const [description, setDescription] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<ExpensePaymentMethod>("BANK");
   const [amount, setAmount] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  const activeProducts = useMemo(() => (products ?? []).filter((p) => p.isActive), [products]);
+  const selectedProduct = useMemo(
+    () => activeProducts.find((p) => p.id === productId),
+    [activeProducts, productId],
+  );
   const expenseAccounts = useMemo(
     () => (accounts ?? []).filter((a) => a.type === "EXPENSE" && a.allowsPosting && a.isActive),
     [accounts],
@@ -44,7 +52,8 @@ export function ExpenseNewPage() {
         expenseDate,
         currency,
         exchangeRate: currency === "USD" && exchangeRate ? exchangeRate : undefined,
-        accountId,
+        productId: productId || undefined,
+        accountId: productId ? undefined : accountId,
         description,
         paymentMethod,
         amount,
@@ -67,11 +76,24 @@ export function ExpenseNewPage() {
               <Input id="description" required value={description} onChange={(e) => setDescription(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="account">Cuenta de gasto</Label>
-              <Select id="account" required value={accountId} onChange={(e) => setAccountId(e.target.value)}>
-                <option value="">Selecciona</option>
-                {expenseAccounts.map((a) => <option key={a.id} value={a.id}>{a.code} - {a.name}</option>)}
+              <Label htmlFor="product">Producto (opcional)</Label>
+              <Select id="product" value={productId} onChange={(e) => { setProductId(e.target.value); setAccountId(""); }}>
+                <option value="">— Elegir cuenta manualmente —</option>
+                {activeProducts.map((p) => <option key={p.id} value={p.id}>{p.description}</option>)}
               </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="account">Cuenta de gasto</Label>
+              {selectedProduct ? (
+                <p className="flex h-9 items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
+                  <span className="font-mono">{selectedProduct.accountCode}</span>&nbsp;{selectedProduct.accountName}
+                </p>
+              ) : (
+                <Select id="account" required value={accountId} onChange={(e) => setAccountId(e.target.value)}>
+                  <option value="">Selecciona</option>
+                  {expenseAccounts.map((a) => <option key={a.id} value={a.id}>{a.code} - {a.name}</option>)}
+                </Select>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="vendor">Proveedor (opcional)</Label>

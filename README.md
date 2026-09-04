@@ -19,6 +19,9 @@ Monorepo con tres subproyectos independientes:
   Correlativo) generado a partir de una autorización **CAI** registrada en Configuración fiscal;
   PDF de factura con los datos del emisor y envío por correo con el PDF adjunto.
 - Exportación a Excel (.xlsx) de facturas y de los reportes financieros.
+- Catálogo de productos/servicios de compra: cada producto se enlaza a una cuenta contable, así
+  que al registrar un gasto basta con elegir el producto y la cuenta correcta se selecciona (y
+  contabiliza) sola, sin tener que conocer el plan de cuentas de memoria.
 - Reportes: balance de comprobación, balance general, estado de resultados, mayor por cuenta.
 - Dashboard con KPIs y gráficos (ingresos/gastos por mes, gastos por categoría).
 - Multiusuario con roles y bitácora de auditoría.

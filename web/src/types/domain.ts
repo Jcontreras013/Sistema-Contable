@@ -158,6 +158,8 @@ export interface Expense {
   exchangeRate: string;
   accountId: string;
   accountName: string;
+  productId: string | null;
+  productDescription: string | null;
   description: string;
   paymentMethod: ExpensePaymentMethod;
   amount: string;
@@ -166,6 +168,16 @@ export interface Expense {
   balanceInBase: string;
   status: ExpenseStatus;
   journalEntryId: string | null;
+  createdAt: string;
+}
+
+export interface Product {
+  id: string;
+  description: string;
+  accountId: string;
+  accountCode: string;
+  accountName: string;
+  isActive: boolean;
   createdAt: string;
 }
 

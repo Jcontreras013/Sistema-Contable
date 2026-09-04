@@ -65,6 +65,7 @@ export function ExpenseDetailPage() {
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <SummaryStat label="Estado" value={<StatusBadge status={expense.status} />} />
         <SummaryStat label="Cuenta" value={expense.accountName} />
+        {expense.productDescription && <SummaryStat label="Producto" value={expense.productDescription} />}
         <SummaryStat label="Total" value={formatMoney(expense.amount, expense.currency)} />
         <SummaryStat label="Saldo" value={formatMoney(expense.balanceInBase)} />
       </div>

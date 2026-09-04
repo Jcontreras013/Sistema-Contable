@@ -5,6 +5,7 @@ import com.proyectofinanzas.backend.common.Currency
 import com.proyectofinanzas.backend.domain.account.Account
 import com.proyectofinanzas.backend.domain.journal.JournalEntry
 import com.proyectofinanzas.backend.domain.party.Party
+import com.proyectofinanzas.backend.domain.product.Product
 import com.proyectofinanzas.backend.domain.user.User
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -81,4 +82,8 @@ class Expense(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     var createdBy: User,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    var product: Product? = null,
 ) : BaseEntity()
