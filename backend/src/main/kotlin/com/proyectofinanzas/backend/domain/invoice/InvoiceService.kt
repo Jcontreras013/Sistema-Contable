@@ -5,6 +5,8 @@ import com.proyectofinanzas.backend.common.Currency
 import com.proyectofinanzas.backend.common.MoneyUtils
 import com.proyectofinanzas.backend.common.NotFoundException
 import com.proyectofinanzas.backend.domain.account.AccountRepository
+import com.proyectofinanzas.backend.domain.creditnote.CreditDebitNoteRepository
+import com.proyectofinanzas.backend.domain.creditnote.NoteType
 import com.proyectofinanzas.backend.domain.exchangerate.ExchangeRateService
 import com.proyectofinanzas.backend.domain.fiscal.CompanyProfileService
 import com.proyectofinanzas.backend.domain.fiscal.CorrelativoService
@@ -39,6 +41,7 @@ class InvoiceService(
     private val invoicePdfService: InvoicePdfService,
     private val companyProfileService: CompanyProfileService,
     private val invoiceMailService: InvoiceMailService,
+    private val creditDebitNoteRepository: CreditDebitNoteRepository,
 ) {
 
     fun create(request: CreateInvoiceRequest): InvoiceResponse {
@@ -124,6 +127,11 @@ class InvoiceService(
         if (paid.signum() > 0) {
             throw BusinessRuleException("No se puede cancelar una factura con cobros registrados")
         }
+        val hasNotes = creditDebitNoteRepository.sumAmountInBaseByInvoiceIdAndType(id, NoteType.CREDIT).signum() > 0 ||
+            creditDebitNoteRepository.sumAmountInBaseByInvoiceIdAndType(id, NoteType.DEBIT).signum() > 0
+        if (hasNotes) {
+            throw BusinessRuleException("No se puede cancelar una factura con notas de crédito o débito emitidas")
+        }
         val journalEntry = invoice.journalEntry
         if (journalEntry != null) {
             postingService.reverse(
@@ -182,7 +190,10 @@ class InvoiceService(
         invoiceRepository.findById(id).orElseThrow { NotFoundException("Factura no encontrada") }
 
     private fun toResponse(invoice: Invoice, lines: List<InvoiceLine>): InvoiceResponse {
-        val paid = paymentRepository.sumAmountInBaseByInvoiceId(requireNotNull(invoice.id))
+        val invoiceId = requireNotNull(invoice.id)
+        val paid = paymentRepository.sumAmountInBaseByInvoiceId(invoiceId)
+        val credited = creditDebitNoteRepository.sumAmountInBaseByInvoiceIdAndType(invoiceId, NoteType.CREDIT)
+        val debited = creditDebitNoteRepository.sumAmountInBaseByInvoiceIdAndType(invoiceId, NoteType.DEBIT)
         return InvoiceResponse(
             id = requireNotNull(invoice.id),
             invoiceNumber = invoice.invoiceNumber,
@@ -197,7 +208,9 @@ class InvoiceService(
             total = invoice.total,
             amountInBase = invoice.amountInBase,
             paidInBase = paid,
-            balanceInBase = invoice.amountInBase - paid,
+            creditedInBase = credited,
+            debitedInBase = debited,
+            balanceInBase = invoice.amountInBase - paid - credited + debited,
             status = invoice.status,
             journalEntryId = invoice.journalEntry?.id,
             notes = invoice.notes,

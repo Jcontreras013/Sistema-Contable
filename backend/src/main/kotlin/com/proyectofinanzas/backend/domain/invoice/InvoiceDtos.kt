@@ -57,6 +57,8 @@ data class InvoiceResponse(
     val total: BigDecimal,
     val amountInBase: BigDecimal,
     val paidInBase: BigDecimal,
+    val creditedInBase: BigDecimal,
+    val debitedInBase: BigDecimal,
     val balanceInBase: BigDecimal,
     val status: InvoiceStatus,
     val journalEntryId: UUID?,

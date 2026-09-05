@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PaymentHistory } from "@/features/payments/PaymentHistory";
 import { RegisterPaymentForm } from "@/features/payments/RegisterPaymentForm";
+import { CreditDebitNoteHistory } from "@/features/invoices/CreditDebitNoteHistory";
+import { IssueCreditDebitNoteForm } from "@/features/invoices/IssueCreditDebitNoteForm";
 import { formatDate, formatMoney } from "@/lib/format";
 
 export function InvoiceDetailPage() {
@@ -18,6 +20,7 @@ export function InvoiceDetailPage() {
   const { hasRole } = useAuth();
   const queryClient = useQueryClient();
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [showNoteForm, setShowNoteForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [emailSent, setEmailSent] = useState(false);
 
@@ -54,7 +57,13 @@ export function InvoiceDetailPage() {
 
   const canManage = hasRole("ADMIN", "ACCOUNTANT");
   const canPay = canManage && invoice.status !== "CANCELLED" && invoice.status !== "PAID";
-  const canCancel = canManage && invoice.status !== "CANCELLED" && Number(invoice.paidInBase) === 0;
+  const canCancel =
+    canManage &&
+    invoice.status !== "CANCELLED" &&
+    Number(invoice.paidInBase) === 0 &&
+    Number(invoice.creditedInBase) === 0 &&
+    Number(invoice.debitedInBase) === 0;
+  const canIssueNote = canManage && invoice.status !== "CANCELLED";
 
   return (
     <div>
@@ -95,6 +104,12 @@ export function InvoiceDetailPage() {
         <SummaryStat label="Total" value={formatMoney(invoice.total, invoice.currency)} />
         <SummaryStat label="Pagado" value={formatMoney(invoice.paidInBase)} />
         <SummaryStat label="Saldo" value={formatMoney(invoice.balanceInBase)} />
+        {Number(invoice.creditedInBase) > 0 && (
+          <SummaryStat label="Acreditado (notas)" value={formatMoney(invoice.creditedInBase)} />
+        )}
+        {Number(invoice.debitedInBase) > 0 && (
+          <SummaryStat label="Debitado (notas)" value={formatMoney(invoice.debitedInBase)} />
+        )}
       </div>
 
       <Table>
@@ -155,6 +170,27 @@ export function InvoiceDetailPage() {
           </div>
         )}
         <PaymentHistory invoiceId={invoice.id} />
+      </div>
+
+      <div className="mt-8">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Notas de crédito/débito</h2>
+          {canIssueNote && (
+            <Button variant="outline" size="sm" onClick={() => setShowNoteForm((v) => !v)}>
+              Emitir nota
+            </Button>
+          )}
+        </div>
+        {showNoteForm && (
+          <div className="mb-4">
+            <IssueCreditDebitNoteForm
+              invoiceId={invoice.id}
+              invalidateKey={["invoices", id]}
+              onIssued={() => setShowNoteForm(false)}
+            />
+          </div>
+        )}
+        <CreditDebitNoteHistory invoiceId={invoice.id} />
       </div>
     </div>
   );

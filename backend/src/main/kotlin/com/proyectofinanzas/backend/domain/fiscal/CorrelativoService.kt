@@ -22,27 +22,40 @@ class CorrelativoService(
 ) {
     companion object {
         const val DOCUMENT_TYPE_FACTURA = "01"
+
+        // El código de tipo de documento que el SAR asigna para notas de crédito/débito varía
+        // según lo que indique tu autorización CAI; estos son los valores usuales sugeridos en
+        // Configuración fiscal, pero registra ahí el que te haya asignado el SAR.
+        const val DOCUMENT_TYPE_CREDIT_NOTE = "03"
+        const val DOCUMENT_TYPE_DEBIT_NOTE = "04"
     }
 
-    fun nextForFactura(): CorrelativoAsignado {
+    fun nextForFactura(): CorrelativoAsignado = next(DOCUMENT_TYPE_FACTURA, "facturas")
+
+    fun nextForCreditNote(): CorrelativoAsignado = next(DOCUMENT_TYPE_CREDIT_NOTE, "notas de crédito")
+
+    fun nextForDebitNote(): CorrelativoAsignado = next(DOCUMENT_TYPE_DEBIT_NOTE, "notas de débito")
+
+    private fun next(documentTypeCode: String, documentLabel: String): CorrelativoAsignado {
         val cai = caiAuthorizationRepository
-            .findFirstByDocumentTypeCodeAndIsActiveTrueOrderByCreatedAtDesc(DOCUMENT_TYPE_FACTURA)
+            .findFirstByDocumentTypeCodeAndIsActiveTrueOrderByCreatedAtDesc(documentTypeCode)
             .orElseThrow {
                 BusinessRuleException(
-                    "No hay una autorización CAI activa para facturas. Regístrala en " +
-                        "Configuración fiscal antes de emitir."
+                    "No hay una autorización CAI activa para $documentLabel (tipo de documento " +
+                        "$documentTypeCode). Regístrala en Configuración fiscal antes de emitir."
                 )
             }
         if (cai.emissionLimitDate.isBefore(LocalDate.now())) {
             throw BusinessRuleException(
-                "La autorización CAI vigente venció el ${cai.emissionLimitDate}. Registra una " +
-                    "nueva en Configuración fiscal antes de emitir."
+                "La autorización CAI vigente para $documentLabel venció el ${cai.emissionLimitDate}. " +
+                    "Registra una nueva en Configuración fiscal antes de emitir."
             )
         }
         if (cai.currentNumber > cai.rangeEnd) {
             throw BusinessRuleException(
-                "La autorización CAI vigente agotó su rango autorizado (${cai.rangeStart}-" +
-                    "${cai.rangeEnd}). Registra una nueva en Configuración fiscal antes de emitir."
+                "La autorización CAI vigente para $documentLabel agotó su rango autorizado " +
+                    "(${cai.rangeStart}-${cai.rangeEnd}). Registra una nueva en Configuración fiscal " +
+                    "antes de emitir."
             )
         }
         val numero = cai.currentNumber

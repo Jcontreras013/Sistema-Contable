@@ -27,6 +27,8 @@ enum class JournalSourceType {
     EXPENSE,
     PAYMENT,
     REVERSAL,
+    CREDIT_NOTE,
+    DEBIT_NOTE,
 }
 
 @Entity

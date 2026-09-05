@@ -117,6 +117,8 @@ export interface Invoice {
   total: string;
   amountInBase: string;
   paidInBase: string;
+  creditedInBase: string;
+  debitedInBase: string;
   balanceInBase: string;
   status: InvoiceStatus;
   journalEntryId: string | null;
@@ -126,6 +128,31 @@ export interface Invoice {
   correlativo: string | null;
   caiCode: string | null;
   caiEmissionLimitDate: string | null;
+}
+
+export type NoteType = "CREDIT" | "DEBIT";
+export type NoteStatus = "ISSUED" | "CANCELLED";
+
+export interface CreditDebitNote {
+  id: string;
+  noteNumber: number;
+  invoiceId: string;
+  invoiceNumber: number;
+  type: NoteType;
+  issueDate: string;
+  reason: string;
+  accountId: string;
+  accountName: string;
+  subtotal: string;
+  taxAmount: string;
+  total: string;
+  amountInBase: string;
+  status: NoteStatus;
+  journalEntryId: string | null;
+  correlativo: string | null;
+  caiCode: string | null;
+  caiEmissionLimitDate: string | null;
+  createdAt: string;
 }
 
 export interface CompanyProfile {

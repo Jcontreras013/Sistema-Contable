@@ -26,6 +26,11 @@ Monorepo con tres subproyectos independientes:
   de retención, varios correos de contacto, y un detalle por proveedor con el historial de
   gastos que se le han registrado.
 - Buscador de texto en Facturas, Gastos, Libro mayor, Proveedores y Productos.
+- Notas de crédito y débito sobre una factura ya emitida (devoluciones, descuentos, cargos
+  adicionales o correcciones), cada una con su propio correlativo/CAI, sin modificar la factura
+  original: la nota de crédito reduce el saldo pendiente (topada al saldo disponible) y la nota
+  de débito lo aumenta; cancelar una nota reversa su asiento contable, y una factura con notas
+  emitidas no se puede cancelar.
 - Reportes: balance de comprobación, balance general, estado de resultados, mayor por cuenta.
 - Dashboard con KPIs y gráficos (ingresos/gastos por mes, gastos por categoría).
 - Multiusuario con roles y bitácora de auditoría.
