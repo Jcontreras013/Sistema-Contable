@@ -12,8 +12,28 @@ data class LoginRequest(
 )
 
 data class LoginResponse(
-    val token: String,
-    val user: UserResponse,
+    val requiresTwoFactor: Boolean = false,
+    val pendingToken: String? = null,
+    val token: String? = null,
+    val user: UserResponse? = null,
+)
+
+data class VerifyTwoFactorRequest(
+    @field:NotBlank val pendingToken: String,
+    @field:NotBlank val code: String,
+)
+
+data class TwoFactorSetupResponse(
+    val secret: String,
+    val otpAuthUri: String,
+)
+
+data class EnableTwoFactorRequest(
+    @field:NotBlank val code: String,
+)
+
+data class DisableTwoFactorRequest(
+    @field:NotBlank val code: String,
 )
 
 data class UserResponse(
@@ -22,6 +42,7 @@ data class UserResponse(
     val fullName: String,
     val role: Role,
     val active: Boolean,
+    val twoFactorEnabled: Boolean,
     val createdAt: Instant,
 ) {
     companion object {
@@ -31,6 +52,7 @@ data class UserResponse(
             fullName = user.fullName,
             role = user.role,
             active = user.active,
+            twoFactorEnabled = user.twoFactorEnabled,
             createdAt = requireNotNull(user.createdAt),
         )
     }

@@ -12,6 +12,7 @@ import {
   Stamp,
   Package,
   ClipboardCheck,
+  KeyRound,
   type LucideIcon,
 } from "lucide-react";
 
@@ -32,6 +33,7 @@ export const navItems: NavItem[] = [
   { to: "/exchange-rates", label: "Tasas de cambio", icon: Coins, roles: ["ADMIN", "ACCOUNTANT"] },
   { to: "/bank-reconciliation", label: "Conciliación bancaria", icon: ClipboardCheck, roles: ["ADMIN", "ACCOUNTANT"] },
   { to: "/reports", label: "Reportes", icon: TrendingUp },
+  { to: "/security", label: "Seguridad", icon: KeyRound },
   { to: "/users", label: "Usuarios", icon: UserCog, roles: ["ADMIN"] },
   { to: "/fiscal-settings", label: "Configuración fiscal", icon: Stamp, roles: ["ADMIN"] },
   { to: "/audit-log", label: "Bitácora de auditoría", icon: ShieldCheck, roles: ["ADMIN", "AUDITOR"] },

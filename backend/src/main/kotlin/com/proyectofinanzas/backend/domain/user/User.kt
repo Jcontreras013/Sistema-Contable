@@ -31,4 +31,10 @@ class User(
 
     @Column(nullable = false)
     var active: Boolean = true,
+
+    @Column(name = "two_factor_secret", length = 64)
+    var twoFactorSecret: String? = null,
+
+    @Column(name = "two_factor_enabled", nullable = false)
+    var twoFactorEnabled: Boolean = false,
 ) : BaseEntity()

@@ -9,11 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 
 export function LoginPage() {
-  const { user, login } = useAuth();
+  const { user, login, verifyTwoFactor } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState("admin@demo.com");
   const [password, setPassword] = useState("");
+  const [pendingToken, setPendingToken] = useState<string | null>(null);
+  const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -22,15 +24,34 @@ export function LoginPage() {
     return <Navigate to={from} replace />;
   }
 
-  const onSubmit = async (event: FormEvent) => {
+  const onSubmitCredentials = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
     setIsSubmitting(true);
     try {
-      await login(email, password);
-      navigate("/", { replace: true });
+      const result = await login(email, password);
+      if (result.requiresTwoFactor) {
+        setPendingToken(result.pendingToken ?? null);
+      } else {
+        navigate("/", { replace: true });
+      }
     } catch (err) {
       setError(err instanceof ApiRequestError ? err.message : "No se pudo iniciar sesión");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const onSubmitCode = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!pendingToken) return;
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      await verifyTwoFactor(pendingToken, code);
+      navigate("/", { replace: true });
+    } catch (err) {
+      setError(err instanceof ApiRequestError ? err.message : "No se pudo verificar el código");
     } finally {
       setIsSubmitting(false);
     }
@@ -43,39 +64,75 @@ export function LoginPage() {
           <div className="mb-6 flex flex-col items-center gap-2 text-center">
             <Landmark className="h-8 w-8 text-primary" />
             <h1 className="text-lg font-semibold">Sistema Contable</h1>
-            <p className="text-sm text-muted-foreground">Ingresa con tu cuenta para continuar</p>
+            <p className="text-sm text-muted-foreground">
+              {pendingToken ? "Ingresa el código de tu app autenticadora" : "Ingresa con tu cuenta para continuar"}
+            </p>
           </div>
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="email">Correo electrónico</Label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="username"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="password">Contraseña</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Ingresando..." : "Ingresar"}
-            </Button>
-          </form>
-          <p className="mt-4 text-center text-xs text-muted-foreground">
-            Demo: admin@demo.com · contador@demo.com · auditor@demo.com — clave Demo1234!
-          </p>
+
+          {!pendingToken ? (
+            <form onSubmit={onSubmitCredentials} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="email">Correo electrónico</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="password">Contraseña</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              {error && <p className="text-sm text-destructive">{error}</p>}
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? "Ingresando..." : "Ingresar"}
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={onSubmitCode} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="code">Código de verificación</Label>
+                <Input
+                  id="code"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  placeholder="123456"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  required
+                  autoFocus
+                />
+              </div>
+              {error && <p className="text-sm text-destructive">{error}</p>}
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? "Verificando..." : "Verificar"}
+              </Button>
+              <button
+                type="button"
+                className="w-full text-center text-xs text-muted-foreground underline"
+                onClick={() => { setPendingToken(null); setCode(""); setError(null); }}
+              >
+                Volver a ingresar correo y contraseña
+              </button>
+            </form>
+          )}
+
+          {!pendingToken && (
+            <p className="mt-4 text-center text-xs text-muted-foreground">
+              Demo: admin@demo.com · contador@demo.com · auditor@demo.com — clave Demo1234!
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

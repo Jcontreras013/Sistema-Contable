@@ -24,6 +24,7 @@ import { GeneralLedgerPage } from "@/features/reports/GeneralLedgerPage";
 import { UsersPage } from "@/features/users/UsersPage";
 import { AuditLogPage } from "@/features/audit-log/AuditLogPage";
 import { FiscalSettingsPage } from "@/features/fiscal/FiscalSettingsPage";
+import { SecuritySettingsPage } from "@/features/security/SecuritySettingsPage";
 
 export default function App() {
   return (
@@ -48,6 +49,7 @@ export default function App() {
           <Route path="expenses/:id" element={<ExpenseDetailPage />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="reports/general-ledger/:accountId" element={<GeneralLedgerPage />} />
+          <Route path="security" element={<SecuritySettingsPage />} />
 
           <Route element={<RequireRole roles={["ADMIN", "ACCOUNTANT"]} />}>
             <Route path="exchange-rates" element={<ExchangeRatesPage />} />

@@ -8,6 +8,7 @@ export interface User {
   fullName: string;
   role: Role;
   active: boolean;
+  twoFactorEnabled: boolean;
   createdAt: string;
 }
 

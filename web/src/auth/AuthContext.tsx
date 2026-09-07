@@ -3,10 +3,17 @@ import { authApi } from "@/api/auth";
 import { tokenStorage } from "@/auth/tokenStorage";
 import type { Role, User } from "@/types/domain";
 
+export interface LoginResult {
+  requiresTwoFactor: boolean;
+  pendingToken?: string;
+}
+
 interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<LoginResult>;
+  verifyTwoFactor: (pendingToken: string, code: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
   logout: () => void;
   hasRole: (...roles: Role[]) => boolean;
 }
@@ -40,16 +47,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setIsLoading(false));
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<LoginResult> => {
     const response = await authApi.login({ email, password });
-    tokenStorage.set(response.token);
-    setUser(response.user);
+    if (response.requiresTwoFactor) {
+      return { requiresTwoFactor: true, pendingToken: response.pendingToken };
+    }
+    tokenStorage.set(response.token!);
+    setUser(response.user!);
+    return { requiresTwoFactor: false };
+  };
+
+  const verifyTwoFactor = async (pendingToken: string, code: string) => {
+    const response = await authApi.verifyTwoFactor({ pendingToken, code });
+    tokenStorage.set(response.token!);
+    setUser(response.user!);
+  };
+
+  const refreshUser = async () => {
+    setUser(await authApi.me());
   };
 
   const hasRole = (...roles: Role[]) => (user ? roles.includes(user.role) : false);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, hasRole }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, isLoading, login, verifyTwoFactor, refreshUser, logout, hasRole }}>
+      {children}
+    </AuthContext.Provider>
   );
 }
 

@@ -28,7 +28,8 @@ class JwtAuthenticationFilter(
 
         val token = header.substring(7)
         val claims = jwtService.parseClaims(token)
-        if (claims != null && SecurityContextHolder.getContext().authentication == null) {
+        val isPendingTwoFactorToken = claims?.get("purpose") == JwtService.PENDING_2FA_PURPOSE
+        if (claims != null && !isPendingTwoFactorToken && SecurityContextHolder.getContext().authentication == null) {
             val userId = claims.subject
             val role = claims["role"] as String
             val authorities = listOf(SimpleGrantedAuthority("ROLE_$role"))

@@ -66,7 +66,7 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers("/api/v1/auth/login").permitAll()
+                    .requestMatchers("/api/v1/auth/login", "/api/v1/auth/login/verify-2fa").permitAll()
                     .requestMatchers("/docs/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                     .requestMatchers("/actuator/health").permitAll()
                     .requestMatchers("/api/v1/users/**").hasRole("ADMIN")

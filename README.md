@@ -43,6 +43,11 @@ Monorepo con tres subproyectos independientes:
 - Reportes: balance de comprobación, balance general, estado de resultados, mayor por cuenta.
 - Dashboard con KPIs y gráficos (ingresos/gastos por mes, gastos por categoría).
 - Multiusuario con roles y bitácora de auditoría.
+- Verificación en dos pasos (2FA) opcional y autogestionada: cada usuario puede activar su propia
+  2FA por TOTP (compatible con Google Authenticator, Authy, etc. — código y URI otpauth para
+  agregar la cuenta manualmente) desde **Seguridad**; con 2FA activo, el login pide un segundo
+  paso con el código de 6 dígitos antes de emitir la sesión, y desactivarla también requiere un
+  código vigente.
 
 ### Decisiones y límites conocidos
 
