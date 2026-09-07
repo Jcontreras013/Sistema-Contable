@@ -57,6 +57,17 @@ class ExpenseService(
         }
         val amount = MoneyUtils.round(request.amount)
         val amountInBase = MoneyUtils.toBase(amount, exchangeRate)
+        val withholdingRate = party?.withholdingRate
+        val withheldInBase = if (
+            party != null &&
+            (party.isrWithholdingAgent || party.isvWithholdingAgent) &&
+            withholdingRate != null &&
+            withholdingRate.signum() > 0
+        ) {
+            MoneyUtils.round(amountInBase * withholdingRate / BigDecimal(100))
+        } else {
+            BigDecimal.ZERO
+        }
 
         val expense = Expense(
             party = party,
@@ -68,6 +79,7 @@ class ExpenseService(
             paymentMethod = request.paymentMethod,
             amount = amount,
             amountInBase = amountInBase,
+            withheldInBase = withheldInBase,
             status = ExpenseStatus.POSTED,
             createdBy = createdBy,
             product = product,
@@ -131,8 +143,9 @@ class ExpenseService(
             paymentMethod = expense.paymentMethod,
             amount = expense.amount,
             amountInBase = expense.amountInBase,
+            withheldInBase = expense.withheldInBase,
             paidInBase = paid,
-            balanceInBase = expense.amountInBase - paid,
+            balanceInBase = expense.amountInBase - expense.withheldInBase - paid,
             status = expense.status,
             journalEntryId = expense.journalEntry?.id,
             createdAt = requireNotNull(expense.createdAt),

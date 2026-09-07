@@ -71,6 +71,10 @@ class Expense(
     @Column(name = "amount_in_base", nullable = false, precision = 19, scale = 4)
     var amountInBase: BigDecimal,
 
+    /** Retención de ISR/ISV aplicada automáticamente si el proveedor es agente retenido. */
+    @Column(name = "withheld_in_base", nullable = false, precision = 19, scale = 4)
+    var withheldInBase: BigDecimal = BigDecimal.ZERO,
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     var status: ExpenseStatus,

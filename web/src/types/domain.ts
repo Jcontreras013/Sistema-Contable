@@ -197,6 +197,7 @@ export interface Expense {
   paymentMethod: ExpensePaymentMethod;
   amount: string;
   amountInBase: string;
+  withheldInBase: string;
   paidInBase: string;
   balanceInBase: string;
   status: ExpenseStatus;

@@ -26,6 +26,7 @@ enum class AccountSystemRole {
     TAX_PAYABLE,
     CASH_HNL,
     CASH_USD,
+    WITHHOLDING_TAX_PAYABLE,
 }
 
 @Entity

@@ -31,6 +31,11 @@ Monorepo con tres subproyectos independientes:
   original: la nota de crédito reduce el saldo pendiente (topada al saldo disponible) y la nota
   de débito lo aumenta; cancelar una nota reversa su asiento contable, y una factura con notas
   emitidas no se puede cancelar.
+- Retención automática de ISR/ISV en gastos: si el proveedor del gasto está marcado como agente
+  retenido (ficha de proveedor, con su porcentaje de retención), el gasto se contabiliza en tres
+  líneas — la cuenta de gasto por el total, **Retenciones por Pagar** por el monto retenido, y
+  Caja/Banco o Cuentas por Pagar solo por el neto — de forma que lo que realmente se paga o se le
+  adeuda al proveedor ya excluye la retención.
 - Reportes: balance de comprobación, balance general, estado de resultados, mayor por cuenta.
 - Dashboard con KPIs y gráficos (ingresos/gastos por mes, gastos por categoría).
 - Multiusuario con roles y bitácora de auditoría.

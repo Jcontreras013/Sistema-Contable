@@ -72,7 +72,7 @@ class PaymentService(
                 throw BusinessRuleException("No se puede registrar un pago sobre un gasto cancelado")
             }
             val alreadyPaid = paymentRepository.sumAmountInBaseByExpenseId(requireNotNull(expense.id))
-            val balance = expense.amountInBase - alreadyPaid
+            val balance = expense.amountInBase - expense.withheldInBase - alreadyPaid
             if (amountInBase.compareTo(balance) > 0) {
                 throw BusinessRuleException("El pago ($amountInBase) supera el saldo pendiente ($balance)")
             }
@@ -106,7 +106,8 @@ class PaymentService(
         } else {
             val expense = requireNotNull(savedPayment.expense)
             val totalPaid = paymentRepository.sumAmountInBaseByExpenseId(requireNotNull(expense.id))
-            expense.status = if (totalPaid.compareTo(expense.amountInBase) >= 0) {
+            val netPayable = expense.amountInBase - expense.withheldInBase
+            expense.status = if (totalPaid.compareTo(netPayable) >= 0) {
                 ExpenseStatus.PAID
             } else {
                 ExpenseStatus.PARTIALLY_PAID

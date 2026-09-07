@@ -67,6 +67,9 @@ export function ExpenseDetailPage() {
         <SummaryStat label="Cuenta" value={expense.accountName} />
         {expense.productDescription && <SummaryStat label="Producto" value={expense.productDescription} />}
         <SummaryStat label="Total" value={formatMoney(expense.amount, expense.currency)} />
+        {Number(expense.withheldInBase) > 0 && (
+          <SummaryStat label="Retención aplicada" value={formatMoney(expense.withheldInBase)} />
+        )}
         <SummaryStat label="Saldo" value={formatMoney(expense.balanceInBase)} />
       </div>
 

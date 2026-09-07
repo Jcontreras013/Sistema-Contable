@@ -257,6 +257,7 @@ class DataSeeder(
         account("21", "PASIVO CORRIENTE", AccountType.LIABILITY, "2", allowsPosting = false)
         account("2101", "Cuentas por Pagar Proveedores", AccountType.LIABILITY, "21", systemRole = AccountSystemRole.ACCOUNTS_PAYABLE)
         account("2105", "ISV por Pagar", AccountType.LIABILITY, "21", systemRole = AccountSystemRole.TAX_PAYABLE)
+        account("2106", "Retenciones por Pagar", AccountType.LIABILITY, "21", systemRole = AccountSystemRole.WITHHOLDING_TAX_PAYABLE)
         account("2110", "Sueldos y Salarios por Pagar", AccountType.LIABILITY, "21")
 
         account("3", "PATRIMONIO", AccountType.EQUITY, allowsPosting = false)

@@ -38,6 +38,7 @@ data class ExpenseResponse(
     val paymentMethod: ExpensePaymentMethod,
     val amount: BigDecimal,
     val amountInBase: BigDecimal,
+    val withheldInBase: BigDecimal,
     val paidInBase: BigDecimal,
     val balanceInBase: BigDecimal,
     val status: ExpenseStatus,
