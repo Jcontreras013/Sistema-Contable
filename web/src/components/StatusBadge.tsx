@@ -6,6 +6,8 @@ const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "succe
   PARTIALLY_PAID: { label: "Parcialmente pagado", variant: "warning" },
   PAID: { label: "Pagado", variant: "success" },
   CANCELLED: { label: "Cancelado", variant: "destructive" },
+  OPEN: { label: "Abierta", variant: "warning" },
+  COMPLETED: { label: "Completada", variant: "success" },
 };
 
 export function StatusBadge({ status }: { status: string }) {

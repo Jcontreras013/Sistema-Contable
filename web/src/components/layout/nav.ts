@@ -11,6 +11,7 @@ import {
   Coins,
   Stamp,
   Package,
+  ClipboardCheck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -29,6 +30,7 @@ export const navItems: NavItem[] = [
   { to: "/invoices", label: "Facturas", icon: FileText },
   { to: "/expenses", label: "Gastos", icon: Receipt },
   { to: "/exchange-rates", label: "Tasas de cambio", icon: Coins, roles: ["ADMIN", "ACCOUNTANT"] },
+  { to: "/bank-reconciliation", label: "Conciliación bancaria", icon: ClipboardCheck, roles: ["ADMIN", "ACCOUNTANT"] },
   { to: "/reports", label: "Reportes", icon: TrendingUp },
   { to: "/users", label: "Usuarios", icon: UserCog, roles: ["ADMIN"] },
   { to: "/fiscal-settings", label: "Configuración fiscal", icon: Stamp, roles: ["ADMIN"] },

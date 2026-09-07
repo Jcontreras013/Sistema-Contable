@@ -2,6 +2,7 @@ package com.proyectofinanzas.backend.domain.journal
 
 import com.proyectofinanzas.backend.common.CreatedOnlyEntity
 import com.proyectofinanzas.backend.domain.account.Account
+import com.proyectofinanzas.backend.domain.bankreconciliation.BankReconciliation
 import com.proyectofinanzas.backend.domain.party.Party
 import com.proyectofinanzas.backend.domain.user.User
 import jakarta.persistence.Column
@@ -86,6 +87,13 @@ class JournalEntryLine(
 
     @Column(length = 500)
     var description: String? = null,
+
+    @Column(nullable = false)
+    var reconciled: Boolean = false,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reconciliation_id")
+    var reconciliation: BankReconciliation? = null,
 ) {
     @Id
     @GeneratedValue

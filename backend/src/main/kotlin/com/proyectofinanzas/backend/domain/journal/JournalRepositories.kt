@@ -53,4 +53,34 @@ interface JournalEntryLineRepository : JpaRepository<JournalEntryLine, UUID> {
         from: LocalDate,
         to: LocalDate,
     ): List<JournalEntryLine>
+
+    // left join explícito: navegar l.reconciliation.id directo en el WHERE generaría un
+    // INNER JOIN implícito, que descartaría toda línea sin conciliar (reconciliation_id NULL)
+    // aun cuando el OR debería incluirla por reconciled = false.
+    @Query(
+        """
+        select l from JournalEntryLine l
+        left join l.reconciliation r
+        where l.account.id = :accountId
+          and l.journalEntry.entryDate <= :asOf
+          and (l.reconciled = false or r.id = :reconciliationId)
+        order by l.journalEntry.entryDate asc
+        """
+    )
+    fun findReconciliationCandidates(
+        @Param("accountId") accountId: UUID,
+        @Param("asOf") asOf: LocalDate,
+        @Param("reconciliationId") reconciliationId: UUID,
+    ): List<JournalEntryLine>
+
+    fun findByReconciliationIdOrderByJournalEntry_EntryDateAsc(reconciliationId: UUID): List<JournalEntryLine>
+
+    @Query(
+        """
+        select coalesce(sum(l.debit), 0) - coalesce(sum(l.credit), 0)
+        from JournalEntryLine l
+        where l.account.id = :accountId and l.reconciled = true and l.journalEntry.entryDate <= :asOf
+        """
+    )
+    fun clearedBalance(@Param("accountId") accountId: UUID, @Param("asOf") asOf: LocalDate): BigDecimal
 }

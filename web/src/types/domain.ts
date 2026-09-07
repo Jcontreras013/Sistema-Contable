@@ -232,6 +232,32 @@ export interface Payment {
   createdAt: string;
 }
 
+export type BankReconciliationStatus = "OPEN" | "COMPLETED";
+
+export interface BankReconciliationLine {
+  id: string;
+  journalEntryId: string;
+  entryDate: string;
+  description: string | null;
+  debit: string;
+  credit: string;
+  reconciled: boolean;
+}
+
+export interface BankReconciliation {
+  id: string;
+  accountId: string;
+  accountName: string;
+  statementDate: string;
+  statementBalance: string;
+  clearedBalance: string;
+  difference: string;
+  status: BankReconciliationStatus;
+  createdByName: string;
+  createdAt: string;
+  lines: BankReconciliationLine[];
+}
+
 export type AuditAction = "CREATE" | "UPDATE" | "DELETE";
 
 export interface AuditLogEntry {

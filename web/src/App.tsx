@@ -9,6 +9,7 @@ import { PartiesPage } from "@/features/parties/PartiesPage";
 import { PartyDetailPage } from "@/features/parties/PartyDetailPage";
 import { ProductsPage } from "@/features/products/ProductsPage";
 import { ExchangeRatesPage } from "@/features/exchange-rates/ExchangeRatesPage";
+import { BankReconciliationPage } from "@/features/bank-reconciliation/BankReconciliationPage";
 import { JournalEntriesListPage } from "@/features/journal-entries/JournalEntriesListPage";
 import { JournalEntryNewPage } from "@/features/journal-entries/JournalEntryNewPage";
 import { JournalEntryDetailPage } from "@/features/journal-entries/JournalEntryDetailPage";
@@ -50,6 +51,7 @@ export default function App() {
 
           <Route element={<RequireRole roles={["ADMIN", "ACCOUNTANT"]} />}>
             <Route path="exchange-rates" element={<ExchangeRatesPage />} />
+            <Route path="bank-reconciliation" element={<BankReconciliationPage />} />
           </Route>
           <Route element={<RequireRole roles={["ADMIN"]} />}>
             <Route path="users" element={<UsersPage />} />

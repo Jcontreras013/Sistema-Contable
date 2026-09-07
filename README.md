@@ -36,6 +36,10 @@ Monorepo con tres subproyectos independientes:
   líneas — la cuenta de gasto por el total, **Retenciones por Pagar** por el monto retenido, y
   Caja/Banco o Cuentas por Pagar solo por el neto — de forma que lo que realmente se paga o se le
   adeuda al proveedor ya excluye la retención.
+- Conciliación bancaria: por cada cuenta de Caja/Banco se pueden abrir sesiones de conciliación
+  contra el saldo real de un estado de cuenta, marcando movimiento por movimiento cuáles ya
+  aparecen en el banco; solo puede completarse cuando el saldo conciliado cuadra exactamente con
+  el saldo del estado de cuenta, y solo puede haber una conciliación abierta a la vez por cuenta.
 - Reportes: balance de comprobación, balance general, estado de resultados, mayor por cuenta.
 - Dashboard con KPIs y gráficos (ingresos/gastos por mes, gastos por categoría).
 - Multiusuario con roles y bitácora de auditoría.
@@ -51,7 +55,7 @@ Monorepo con tres subproyectos independientes:
   claro, pero el resto del sistema (incluido `/actuator/health`) sigue funcionando normalmente.
 - El balance general incluye una línea sintética de "Utilidad del ejercicio (no cerrada)", calculada en vivo; no existe un asiento formal de cierre de periodo.
 - Un usuario tiene un único rol (no hay matriz de permisos granular).
-- No hay inventario, presupuestos ni conciliación bancaria en esta fase.
+- No hay inventario ni presupuestos en esta fase.
 
 ## Requisitos
 
