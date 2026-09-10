@@ -40,6 +40,18 @@ Monorepo con tres subproyectos independientes:
   contra el saldo real de un estado de cuenta, marcando movimiento por movimiento cuáles ya
   aparecen en el banco; solo puede completarse cuando el saldo conciliado cuadra exactamente con
   el saldo del estado de cuenta, y solo puede haber una conciliación abierta a la vez por cuenta.
+- Activos fijos y depreciación: cada activo (equipo de red, vehículos, cómputo, etc.) se deprecia
+  en línea recta con un botón que corre la depreciación del mes para todos los activos activos a
+  la vez, contabilizando un asiento por activo (Dr gasto de depreciación / Cr depreciación
+  acumulada) topado al valor residual y sin repetir un periodo ya depreciado; dar de baja un
+  activo solo detiene su depreciación futura, sin contabilizar ganancia/pérdida por retiro.
+- Cierre contable formal: cierra un periodo hasta una fecha de corte, llevando a cero cada cuenta
+  de ingreso/gasto con actividad desde el último cierre (o desde el inicio) y trasladando el neto
+  a **Utilidades Retenidas** en un solo asiento; a partir de ahí, ningún módulo (facturas, gastos,
+  pagos, notas, depreciación, asientos manuales) puede contabilizar en una fecha igual o anterior
+  al periodo cerrado.
+- Antigüedad de saldos: cartera vencida por cliente en franjas de 0, 1-30, 31-60, 61-90 y +90 días,
+  para gestión de cobranza cuando hay muchos clientes con saldo pendiente.
 - Reportes: balance de comprobación, balance general, estado de resultados, mayor por cuenta.
 - Dashboard con KPIs y gráficos (ingresos/gastos por mes, gastos por categoría).
 - Multiusuario con roles y bitácora de auditoría.
@@ -58,7 +70,10 @@ Monorepo con tres subproyectos independientes:
 - El envío de facturas por correo requiere configurar un SMTP real (`SMTP_HOST`, `SMTP_PORT`,
   `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM`); sin esas variables el envío falla con un mensaje
   claro, pero el resto del sistema (incluido `/actuator/health`) sigue funcionando normalmente.
-- El balance general incluye una línea sintética de "Utilidad del ejercicio (no cerrada)", calculada en vivo; no existe un asiento formal de cierre de periodo.
+- El balance general incluye una línea sintética de "Utilidad del ejercicio (no cerrada)" con la
+  actividad de ingresos/gastos aún no cerrada del año en curso, calculada en vivo desde el 1 de
+  enero — al cerrar un periodo, la utilidad ya cerrada se refleja en el saldo real de Utilidades
+  Retenidas, y esta línea sintética pasa a mostrar solo lo pendiente de cerrar.
 - Un usuario tiene un único rol (no hay matriz de permisos granular).
 - No hay inventario ni presupuestos en esta fase.
 

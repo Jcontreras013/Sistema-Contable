@@ -89,6 +89,19 @@ class ReportController(
         return xlsxResponse(excelExportService.generalLedger(report), "mayor-${report.accountCode}.xlsx")
     }
 
+    @GetMapping("/aging-report")
+    fun agingReport(
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) asOf: LocalDate?,
+    ): AgingReportResponse = reportService.agingReport(asOf ?: LocalDate.now())
+
+    @GetMapping("/aging-report/export")
+    fun agingReportExport(
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) asOf: LocalDate?,
+    ): ResponseEntity<ByteArray> {
+        val report = reportService.agingReport(asOf ?: LocalDate.now())
+        return xlsxResponse(excelExportService.agingReport(report), "antiguedad-de-saldos.xlsx")
+    }
+
     @GetMapping("/dashboard-kpis")
     fun dashboardKpis(
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate?,

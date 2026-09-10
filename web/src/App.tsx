@@ -25,6 +25,8 @@ import { UsersPage } from "@/features/users/UsersPage";
 import { AuditLogPage } from "@/features/audit-log/AuditLogPage";
 import { FiscalSettingsPage } from "@/features/fiscal/FiscalSettingsPage";
 import { SecuritySettingsPage } from "@/features/security/SecuritySettingsPage";
+import { FixedAssetsPage } from "@/features/fixed-assets/FixedAssetsPage";
+import { PeriodClosePage } from "@/features/period-close/PeriodClosePage";
 
 export default function App() {
   return (
@@ -54,10 +56,12 @@ export default function App() {
           <Route element={<RequireRole roles={["ADMIN", "ACCOUNTANT"]} />}>
             <Route path="exchange-rates" element={<ExchangeRatesPage />} />
             <Route path="bank-reconciliation" element={<BankReconciliationPage />} />
+            <Route path="fixed-assets" element={<FixedAssetsPage />} />
           </Route>
           <Route element={<RequireRole roles={["ADMIN"]} />}>
             <Route path="users" element={<UsersPage />} />
             <Route path="fiscal-settings" element={<FiscalSettingsPage />} />
+            <Route path="period-close" element={<PeriodClosePage />} />
           </Route>
           <Route element={<RequireRole roles={["ADMIN", "AUDITOR"]} />}>
             <Route path="audit-log" element={<AuditLogPage />} />

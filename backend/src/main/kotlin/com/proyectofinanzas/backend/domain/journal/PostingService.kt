@@ -6,6 +6,7 @@ import com.proyectofinanzas.backend.domain.account.AccountRepository
 import com.proyectofinanzas.backend.domain.audit.AuditAction
 import com.proyectofinanzas.backend.domain.audit.AuditService
 import com.proyectofinanzas.backend.domain.party.PartyRepository
+import com.proyectofinanzas.backend.domain.periodclose.PeriodCloseRepository
 import com.proyectofinanzas.backend.domain.user.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -34,6 +35,7 @@ class PostingService(
     private val partyRepository: PartyRepository,
     private val userRepository: UserRepository,
     private val auditService: AuditService,
+    private val periodCloseRepository: PeriodCloseRepository,
 ) {
 
     @Transactional
@@ -47,6 +49,13 @@ class PostingService(
         reversalOf: JournalEntry? = null,
     ): JournalEntry {
         require(lines.size >= 2) { "Un asiento contable requiere al menos dos líneas" }
+
+        val lastClose = periodCloseRepository.findTopByOrderByPeriodEndDateDesc()
+        if (lastClose != null && entryDate.compareTo(lastClose.periodEndDate) <= 0) {
+            throw BusinessRuleException(
+                "No se puede contabilizar en un periodo ya cerrado (cerrado hasta ${lastClose.periodEndDate})"
+            )
+        }
 
         val totalDebit = lines.fold(BigDecimal.ZERO) { acc, l -> acc + l.debit }
         val totalCredit = lines.fold(BigDecimal.ZERO) { acc, l -> acc + l.credit }

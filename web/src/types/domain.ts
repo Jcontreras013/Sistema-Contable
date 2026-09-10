@@ -259,6 +259,51 @@ export interface BankReconciliation {
   lines: BankReconciliationLine[];
 }
 
+export type FixedAssetStatus = "ACTIVE" | "FULLY_DEPRECIATED" | "DISPOSED";
+
+export interface FixedAsset {
+  id: string;
+  description: string;
+  accountId: string;
+  accountName: string;
+  depreciationExpenseAccountId: string;
+  depreciationExpenseAccountName: string;
+  accumulatedDepreciationAccountId: string;
+  accumulatedDepreciationAccountName: string;
+  acquisitionDate: string;
+  cost: string;
+  residualValue: string;
+  usefulLifeMonths: number;
+  monthlyDepreciation: string;
+  accumulatedDepreciation: string;
+  bookValue: string;
+  lastDepreciationPeriod: string | null;
+  status: FixedAssetStatus;
+  disposalDate: string | null;
+  createdAt: string;
+}
+
+export interface DepreciationRunItem {
+  fixedAssetId: string;
+  description: string;
+  amount: string;
+  journalEntryId: string;
+}
+
+export interface DepreciationRunResult {
+  period: string;
+  items: DepreciationRunItem[];
+}
+
+export interface PeriodClose {
+  id: string;
+  periodEndDate: string;
+  netIncome: string;
+  journalEntryId: string | null;
+  closedByName: string;
+  createdAt: string;
+}
+
 export type AuditAction = "CREATE" | "UPDATE" | "DELETE";
 
 export interface AuditLogEntry {

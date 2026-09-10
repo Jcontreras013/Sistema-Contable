@@ -8,6 +8,9 @@ const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "succe
   CANCELLED: { label: "Cancelado", variant: "destructive" },
   OPEN: { label: "Abierta", variant: "warning" },
   COMPLETED: { label: "Completada", variant: "success" },
+  ACTIVE: { label: "Activo", variant: "success" },
+  FULLY_DEPRECIATED: { label: "Totalmente depreciado", variant: "warning" },
+  DISPOSED: { label: "Dado de baja", variant: "destructive" },
 };
 
 export function StatusBadge({ status }: { status: string }) {

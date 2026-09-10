@@ -30,6 +30,8 @@ enum class JournalSourceType {
     REVERSAL,
     CREDIT_NOTE,
     DEBIT_NOTE,
+    DEPRECIATION,
+    PERIOD_CLOSE,
 }
 
 @Entity

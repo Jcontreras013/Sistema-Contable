@@ -80,6 +80,28 @@ data class GeneralLedgerResponse(
     val closingBalance: BigDecimal,
 )
 
+data class AgingReportLine(
+    val partyId: UUID,
+    val partyName: String,
+    val current: BigDecimal,
+    val days1To30: BigDecimal,
+    val days31To60: BigDecimal,
+    val days61To90: BigDecimal,
+    val daysOver90: BigDecimal,
+    val total: BigDecimal,
+)
+
+data class AgingReportResponse(
+    val asOf: LocalDate,
+    val lines: List<AgingReportLine>,
+    val totalCurrent: BigDecimal,
+    val totalDays1To30: BigDecimal,
+    val totalDays31To60: BigDecimal,
+    val totalDays61To90: BigDecimal,
+    val totalDaysOver90: BigDecimal,
+    val grandTotal: BigDecimal,
+)
+
 data class MonthlyPoint(
     val month: String,
     val revenue: BigDecimal,

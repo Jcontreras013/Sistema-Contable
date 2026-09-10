@@ -74,6 +74,28 @@ export interface GeneralLedgerResponse {
   closingBalance: string;
 }
 
+export interface AgingReportLine {
+  partyId: string;
+  partyName: string;
+  current: string;
+  days1To30: string;
+  days31To60: string;
+  days61To90: string;
+  daysOver90: string;
+  total: string;
+}
+
+export interface AgingReportResponse {
+  asOf: string;
+  lines: AgingReportLine[];
+  totalCurrent: string;
+  totalDays1To30: string;
+  totalDays31To60: string;
+  totalDays61To90: string;
+  totalDaysOver90: string;
+  grandTotal: string;
+}
+
 export interface MonthlyPoint {
   month: string;
   revenue: string;

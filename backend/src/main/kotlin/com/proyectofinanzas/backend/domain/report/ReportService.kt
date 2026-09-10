@@ -6,24 +6,91 @@ import com.proyectofinanzas.backend.domain.account.Account
 import com.proyectofinanzas.backend.domain.account.AccountRepository
 import com.proyectofinanzas.backend.domain.account.AccountSystemRole
 import com.proyectofinanzas.backend.domain.account.AccountType
+import com.proyectofinanzas.backend.domain.creditnote.CreditDebitNoteRepository
+import com.proyectofinanzas.backend.domain.creditnote.NoteType
+import com.proyectofinanzas.backend.domain.invoice.InvoiceRepository
+import com.proyectofinanzas.backend.domain.invoice.InvoiceStatus
 import com.proyectofinanzas.backend.domain.journal.JournalEntryLineRepository
+import com.proyectofinanzas.backend.domain.payment.PaymentRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.TextStyle
+import java.time.temporal.ChronoUnit
 import java.util.Locale
 import java.util.UUID
 
 private data class DebitCredit(val debit: BigDecimal, val credit: BigDecimal)
+
+private class AgingBucket(val partyName: String) {
+    var current: BigDecimal = BigDecimal.ZERO
+    var days1To30: BigDecimal = BigDecimal.ZERO
+    var days31To60: BigDecimal = BigDecimal.ZERO
+    var days61To90: BigDecimal = BigDecimal.ZERO
+    var daysOver90: BigDecimal = BigDecimal.ZERO
+}
 
 @Service
 @Transactional(readOnly = true)
 class ReportService(
     private val accountRepository: AccountRepository,
     private val journalEntryLineRepository: JournalEntryLineRepository,
+    private val invoiceRepository: InvoiceRepository,
+    private val paymentRepository: PaymentRepository,
+    private val creditDebitNoteRepository: CreditDebitNoteRepository,
 ) {
+
+    fun agingReport(asOf: LocalDate): AgingReportResponse {
+        val invoices = invoiceRepository.findAllByOrderByIssueDateDescInvoiceNumberDesc()
+            .filter { it.status != InvoiceStatus.CANCELLED && it.status != InvoiceStatus.PAID }
+
+        val byParty = LinkedHashMap<UUID, AgingBucket>()
+        for (invoice in invoices) {
+            val invoiceId = requireNotNull(invoice.id)
+            val paid = paymentRepository.sumAmountInBaseByInvoiceId(invoiceId)
+            val credited = creditDebitNoteRepository.sumAmountInBaseByInvoiceIdAndType(invoiceId, NoteType.CREDIT)
+            val debited = creditDebitNoteRepository.sumAmountInBaseByInvoiceIdAndType(invoiceId, NoteType.DEBIT)
+            val balance = MoneyUtils.round(invoice.amountInBase - paid - credited + debited)
+            if (balance.signum() <= 0) continue
+
+            val daysOverdue = ChronoUnit.DAYS.between(invoice.dueDate, asOf)
+            val partyId = requireNotNull(invoice.party.id)
+            val bucket = byParty.getOrPut(partyId) { AgingBucket(invoice.party.name) }
+            when {
+                daysOverdue <= 0 -> bucket.current += balance
+                daysOverdue <= 30 -> bucket.days1To30 += balance
+                daysOverdue <= 60 -> bucket.days31To60 += balance
+                daysOverdue <= 90 -> bucket.days61To90 += balance
+                else -> bucket.daysOver90 += balance
+            }
+        }
+
+        val lines = byParty.map { (partyId, b) ->
+            AgingReportLine(
+                partyId = partyId,
+                partyName = b.partyName,
+                current = b.current,
+                days1To30 = b.days1To30,
+                days31To60 = b.days31To60,
+                days61To90 = b.days61To90,
+                daysOver90 = b.daysOver90,
+                total = b.current + b.days1To30 + b.days31To60 + b.days61To90 + b.daysOver90,
+            )
+        }.sortedByDescending { it.total }
+
+        return AgingReportResponse(
+            asOf = asOf,
+            lines = lines,
+            totalCurrent = lines.sumOf { it.current },
+            totalDays1To30 = lines.sumOf { it.days1To30 },
+            totalDays31To60 = lines.sumOf { it.days31To60 },
+            totalDays61To90 = lines.sumOf { it.days61To90 },
+            totalDaysOver90 = lines.sumOf { it.daysOver90 },
+            grandTotal = lines.sumOf { it.total },
+        )
+    }
 
     fun trialBalance(asOf: LocalDate): TrialBalanceResponse {
         val figures = movementsUpTo(asOf)

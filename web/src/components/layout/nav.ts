@@ -13,6 +13,8 @@ import {
   Package,
   ClipboardCheck,
   KeyRound,
+  Building2,
+  Lock,
   type LucideIcon,
 } from "lucide-react";
 
@@ -32,9 +34,11 @@ export const navItems: NavItem[] = [
   { to: "/expenses", label: "Gastos", icon: Receipt },
   { to: "/exchange-rates", label: "Tasas de cambio", icon: Coins, roles: ["ADMIN", "ACCOUNTANT"] },
   { to: "/bank-reconciliation", label: "Conciliación bancaria", icon: ClipboardCheck, roles: ["ADMIN", "ACCOUNTANT"] },
+  { to: "/fixed-assets", label: "Activos fijos", icon: Building2, roles: ["ADMIN", "ACCOUNTANT"] },
   { to: "/reports", label: "Reportes", icon: TrendingUp },
   { to: "/security", label: "Seguridad", icon: KeyRound },
   { to: "/users", label: "Usuarios", icon: UserCog, roles: ["ADMIN"] },
   { to: "/fiscal-settings", label: "Configuración fiscal", icon: Stamp, roles: ["ADMIN"] },
+  { to: "/period-close", label: "Cierre contable", icon: Lock, roles: ["ADMIN"] },
   { to: "/audit-log", label: "Bitácora de auditoría", icon: ShieldCheck, roles: ["ADMIN", "AUDITOR"] },
 ];

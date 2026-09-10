@@ -252,6 +252,11 @@ class DataSeeder(
         account("12", "ACTIVO NO CORRIENTE", AccountType.ASSET, "1", allowsPosting = false)
         account("1201", "Mobiliario y Equipo de Oficina", AccountType.ASSET, "12")
         account("1202", "Equipo de Cómputo", AccountType.ASSET, "12")
+        account("1203", "Equipo de Red y Telecomunicaciones", AccountType.ASSET, "12")
+        account("1204", "Vehículos", AccountType.ASSET, "12")
+        // Depreciación acumulada es una cuenta contra-activo (naturaleza acreedora) que se
+        // presenta bajo Activo No Corriente, restando el valor en libros de los activos fijos.
+        account("1290", "Depreciación Acumulada", AccountType.ASSET, "12")
 
         account("2", "PASIVO", AccountType.LIABILITY, allowsPosting = false)
         account("21", "PASIVO CORRIENTE", AccountType.LIABILITY, "2", allowsPosting = false)
@@ -262,7 +267,7 @@ class DataSeeder(
 
         account("3", "PATRIMONIO", AccountType.EQUITY, allowsPosting = false)
         account("3101", "Capital Social", AccountType.EQUITY, "3")
-        account("3102", "Utilidades Retenidas", AccountType.EQUITY, "3")
+        account("3102", "Utilidades Retenidas", AccountType.EQUITY, "3", systemRole = AccountSystemRole.RETAINED_EARNINGS)
 
         account("4", "INGRESOS", AccountType.INCOME, allowsPosting = false)
         account("4101", "Ventas de Servicios", AccountType.INCOME, "4")
@@ -277,6 +282,7 @@ class DataSeeder(
         account("5105", "Publicidad y Mercadeo", AccountType.EXPENSE, "51")
         account("5106", "Mantenimiento y Reparaciones", AccountType.EXPENSE, "51")
         account("5107", "Combustibles y Lubricantes", AccountType.EXPENSE, "51")
+        account("5108", "Depreciación", AccountType.EXPENSE, "51")
         account("5199", "Gastos Diversos", AccountType.EXPENSE, "51")
 
         return accounts

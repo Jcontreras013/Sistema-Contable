@@ -1,6 +1,7 @@
 package com.proyectofinanzas.backend.domain.export
 
 import com.proyectofinanzas.backend.domain.invoice.InvoiceResponse
+import com.proyectofinanzas.backend.domain.report.AgingReportResponse
 import com.proyectofinanzas.backend.domain.report.BalanceSheetResponse
 import com.proyectofinanzas.backend.domain.report.GeneralLedgerResponse
 import com.proyectofinanzas.backend.domain.report.IncomeStatementResponse
@@ -73,6 +74,18 @@ class ExcelExportService {
             row(sheet, report.lines.size + 2, "", "", "Saldo final", "", "", report.closingBalance)
             widths(sheet, 10, 12, 40, 14, 14, 16)
         }
+
+    fun agingReport(report: AgingReportResponse): ByteArray = buildWorkbook("Antigüedad de saldos") { sheet, style ->
+        header(sheet, style, "Cliente", "Corriente", "1-30 días", "31-60 días", "61-90 días", "+90 días", "Total")
+        report.lines.forEachIndexed { i, l ->
+            row(sheet, i + 1, l.partyName, l.current, l.days1To30, l.days31To60, l.days61To90, l.daysOver90, l.total)
+        }
+        row(
+            sheet, report.lines.size + 1, "TOTAL", report.totalCurrent, report.totalDays1To30,
+            report.totalDays31To60, report.totalDays61To90, report.totalDaysOver90, report.grandTotal,
+        )
+        widths(sheet, 30, 14, 14, 14, 14, 14, 16)
+    }
 
     fun invoices(invoices: List<InvoiceResponse>): ByteArray = buildWorkbook("Facturas") { sheet, style ->
         header(

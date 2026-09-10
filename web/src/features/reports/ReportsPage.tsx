@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { cn } from "@/lib/utils";
+import { AgingReportView } from "@/features/reports/AgingReportView";
 import { BalanceSheetView } from "@/features/reports/BalanceSheetView";
 import { DashboardView } from "@/features/reports/DashboardView";
 import { HomeView } from "@/features/reports/HomeView";
@@ -13,6 +14,7 @@ const TABS = [
   { key: "trial-balance", label: "Balance de comprobación" },
   { key: "balance-sheet", label: "Balance general" },
   { key: "income-statement", label: "Estado de resultados" },
+  { key: "aging-report", label: "Antigüedad de saldos" },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
@@ -44,6 +46,7 @@ export function ReportsPage() {
       {tab === "trial-balance" && <TrialBalanceView />}
       {tab === "balance-sheet" && <BalanceSheetView />}
       {tab === "income-statement" && <IncomeStatementView />}
+      {tab === "aging-report" && <AgingReportView />}
     </div>
   );
 }

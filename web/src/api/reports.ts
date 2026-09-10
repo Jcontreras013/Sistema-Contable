@@ -1,5 +1,6 @@
 import { api, downloadFile } from "@/api/client";
 import type {
+  AgingReportResponse,
   BalanceSheetResponse,
   DashboardKpisResponse,
   GeneralLedgerResponse,
@@ -9,6 +10,8 @@ import type {
 
 export const reportsApi = {
   trialBalance: (asOf?: string) => api.get<TrialBalanceResponse>("/reports/trial-balance", { asOf }),
+  agingReport: (asOf?: string) => api.get<AgingReportResponse>("/reports/aging-report", { asOf }),
+  exportAgingReport: (asOf?: string) => downloadFile("/reports/aging-report/export", { asOf }),
   balanceSheet: (asOf?: string) => api.get<BalanceSheetResponse>("/reports/balance-sheet", { asOf }),
   incomeStatement: (from?: string, to?: string) =>
     api.get<IncomeStatementResponse>("/reports/income-statement", { from, to }),
